@@ -60,7 +60,7 @@ export const GoalProgressCircle = () => {
           </p>
         </div>
         <div>
-          <p className="text-xs text-slate-400">目標金額</p>
+          <p className="text-xs text-slate-400">目標利益</p>
           <p className="text-lg font-bold text-slate-100">
             ¥{monthlyGoal.toLocaleString()}
           </p>

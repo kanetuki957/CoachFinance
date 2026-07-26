@@ -1,8 +1,11 @@
 import React from 'react';
 import { FinanceProvider } from './context/FinanceContext';
+import { MonthSelector } from './components/MonthSelector';
 import { GoalProgressCircle } from './components/GoalProgressCircle';
 import { CharacterEvolution } from './components/CharacterEvolution';
 import { TransactionForm } from './components/TransactionForm';
+import { TransactionList } from './components/TransactionList';
+//import { IncomeList } from './components/IncomeList';
 
 export default function App() {
   return (
@@ -18,16 +21,23 @@ export default function App() {
           </span>
         </header>
 
-        {/* メインコンテンツ（画面A: ホーム画面） */}
+        {/* メインコンテンツ */}
         <main className="w-full max-w-md space-y-4">
-          {/* 機能1, 2: 目標と現在の実績グラフ */}
+          {/* 月選択コンポーネント */}
+          <MonthSelector />
+
+          {/* 機能1, 2: 選択月の目標と実績グラフ */}
           <GoalProgressCircle />
 
-          {/* 機能4, 5: 自分と目標の進化イラストコンポーネント */}
+          {/* 機能4, 5: 選択月の達成度に応じた進化イラスト */}
           <CharacterEvolution />
-        </main>
 
-        {/* 機能3: ＋ボタン＆利益入力用アクション */}
+          {/* 日付ごとのメモ・金額履歴表示 */}
+          <TransactionList />
+        </main>
+        
+
+        {/* 機能3: 利益入力フォームボタン */}
         <TransactionForm />
       </div>
     </FinanceProvider>
