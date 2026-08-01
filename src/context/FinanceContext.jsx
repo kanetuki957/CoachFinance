@@ -2,9 +2,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const FinanceContext = createContext(null);
 
-const STORAGE_KEY = 'coach_finance_data_v2';
+const STORAGE_KEY = 'coach_finance_data_v3';
 
-// 今月の YYYY-MM フォーマットを取得するヘルパー関数
+// YYYY-MM フォーマットを取得するヘルパー関数
 const getFormattedMonth = (date = new Date()) => {
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -12,22 +12,31 @@ const getFormattedMonth = (date = new Date()) => {
 };
 
 const INITIAL_STATE = {
-  // 月ごとの目標 { "2026-07": 500000 }
-  monthlyGoals: {
+  // 月ごとの目標利益 { "2026-08": 500000 }
+  monthlyTargetProfits: {
     [getFormattedMonth()]: 500000
   },
+  // 取引データ（type: 'revenue' | 'cost'）
   transactions: [
     {
       id: '1',
+      type: 'revenue',
       amount: 50000,
       date: `${getFormattedMonth()}-01`,
       note: 'コーチング契約1件目'
+    },
+    {
+      id: '2',
+      type: 'cost',
+      amount: 10000,
+      date: `${getFormattedMonth()}-02`,
+      note: 'ツール利用料・システム費'
     }
   ]
 };
 
 export const FinanceProvider = ({ children }) => {
-  // 現在選択されている年月 (例: "2026-07")
+  // 現在選択されている年月 (例: "2026-08")
   const [selectedMonth, setSelectedMonth] = useState(getFormattedMonth());
 
   const [state, setState] = useState(() => {
@@ -47,31 +56,45 @@ export const FinanceProvider = ({ children }) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  // 選択中の月の目標金額を取得（未設定の場合はデフォルト50万円）
-  const currentGoal = state.monthlyGoals[selectedMonth] ?? 500000;
+  // 選択中の月の「目標利益」（未設定の場合はデフォルト50万円）
+  const targetProfit = state.monthlyTargetProfits[selectedMonth] ?? 500000;
 
-  // 選択中の月の合計実績金額を計算
-  const currentMonthTotal = state.transactions.reduce((sum, item) => {
-    if (item.date.startsWith(selectedMonth)) {
-      return sum + item.amount;
-    }
-    return sum;
+  // 選択中の月の取引リスト
+  const currentMonthTransactions = state.transactions.filter(t => 
+    t.date.startsWith(selectedMonth)
+  );
+
+  // 1. 売上高（Revenue）の合計
+  const totalRevenue = currentMonthTransactions.reduce((sum, item) => {
+    return item.type === 'revenue' ? sum + item.amount : sum;
   }, 0);
 
-  // 選択中の月の達成率（%）
-  const progressPercentage = currentGoal > 0 
-    ? Math.max(0, (currentMonthTotal / currentGoal) * 100) 
+  // 2. コスト（Cost）の合計
+  const totalCost = currentMonthTransactions.reduce((sum, item) => {
+    return item.type === 'cost' ? sum + item.amount : sum;
+  }, 0);
+
+  // 3. 現在の利益（売上高 - コスト）
+  const currentProfit = totalRevenue - totalCost;
+
+  // 4. 目標利益に対する達成率（%）- 整数に四捨五入
+  const rawProgress = targetProfit > 0
+    ? (currentProfit / targetProfit) * 100
     : 0;
+  
+  // マイナスは0%にし、小数点以下を四捨五入（例: 8%）
+  const achievementRate = Math.max(0, Math.round(rawProgress));
 
-  // 選択中の月の指定日（デフォルトは本日）にトランザクションを追加
-  const addTransaction = (amount, note = '', dateStr) => {
-    if (isNaN(amount) || amount === 0) return;
+  // 取引（売上またはコスト）を追加する関数
+  const addTransaction = (amount, note = '', type = 'revenue', dateStr) => {
+    if (isNaN(amount) || amount <= 0) return;
 
-    // 日付未指定時は選択中の月の今日（もしくはその月の1日）を設定
-    const targetDate = dateStr || `${selectedMonth}-${String(new Date().getDate()).padStart(2, '0')}`;
+    // 日付が指定されていない場合は現在選択中の月の1日を設定
+    const targetDate = dateStr || `${selectedMonth}-01`;
 
     const newTransaction = {
-      id: crypto.randomUUID(),
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      type, // 'revenue' または 'cost'
       amount: Number(amount),
       date: targetDate,
       note
@@ -83,14 +106,28 @@ export const FinanceProvider = ({ children }) => {
     }));
   };
 
-  // 選択中の月の目標金額を設定・更新
-  const updateMonthlyGoal = (goal) => {
-    if (isNaN(goal) || goal < 0) return;
+  // 売上を追加
+  const addRevenue = (amount, note = '', dateStr) => addTransaction(amount, note, 'revenue', dateStr);
+
+  // コストを追加
+  const addCost = (amount, note = '', dateStr) => addTransaction(amount, note, 'cost', dateStr);
+
+  // 取引の削除
+  const deleteTransaction = (id) => {
     setState(prev => ({
       ...prev,
-      monthlyGoals: {
-        ...prev.monthlyGoals,
-        [selectedMonth]: Number(goal)
+      transactions: prev.transactions.filter(t => t.id !== id)
+    }));
+  };
+
+  // 選択中の月の「目標利益」を設定・更新
+  const updateTargetProfit = (profit) => {
+    if (isNaN(profit) || profit < 0) return;
+    setState(prev => ({
+      ...prev,
+      monthlyTargetProfits: {
+        ...prev.monthlyTargetProfits,
+        [selectedMonth]: Number(profit)
       }
     }));
   };
@@ -105,12 +142,18 @@ export const FinanceProvider = ({ children }) => {
   return (
     <FinanceContext.Provider value={{
       selectedMonth,
-      monthlyGoal: currentGoal,
-      transactions: state.transactions.filter(t => t.date.startsWith(selectedMonth)),
-      currentMonthTotal,
-      progressPercentage,
-      addTransaction,
-      updateMonthlyGoal,
+      targetProfit,            // 目標利益
+      totalRevenue,            // 売上高
+      totalCost,               // コスト
+      currentProfit,           // 現在の利益（売上高 - コスト）
+      achievementRate,         // 👈 ここ！ GoalProgressCircleが読み込めるように追加
+      profitProgressPercentage: achievementRate, // 互換性のため残す
+      transactions: currentMonthTransactions, // 当月の全取引一覧
+      addTransaction,          // 取引追加(type指定可)
+      addRevenue,              // 売上追加
+      addCost,                 // コスト追加
+      deleteTransaction,       // 取引削除
+      updateTargetProfit,      // 目標利益の更新
       changeMonth,
       setSelectedMonth
     }}>

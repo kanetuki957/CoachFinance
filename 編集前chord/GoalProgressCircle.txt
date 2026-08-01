@@ -1,0 +1,103 @@
+import React from 'react';
+import { useFinance } from '../context/FinanceContext';
+
+export const GoalProgressCircle = () => {
+  const {
+    totalRevenue,             // 売上高
+    totalCost,                // コスト
+    currentProfit,            // 現在の利益 (売上 - コスト)
+    targetProfit,             // 目標利益
+    profitProgressPercentage  // 利益達成率
+  } = useFinance();
+
+  // 安全対策（undefined 回避）
+  const progress = profitProgressPercentage ?? 0;
+  const goal = targetProfit ?? 0;
+
+  // SVG円グラフの計算用
+  const radius = 80;
+  const circumference = 2 * Math.PI * radius;
+  // 100%を超えても描画崩れを起こさないようクランプ（0〜100の範囲にする）
+  const clampedProgress = Math.min(Math.max(progress, 0), 100);
+  const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
+
+  // 利益がプラスかマイナスかの判定
+  const isPositive = currentProfit >= 0;
+
+  return (
+    <div className="flex flex-col items-center justify-center p-6 bg-slate-900 text-white rounded-xl shadow-md border border-slate-800">
+      {/* 円形グラフSVG */}
+      <div className="relative w-48 h-48 flex items-center justify-center">
+        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
+          {/* 背景の円 */}
+          <circle
+            cx="100"
+            cy="100"
+            r={radius}
+            className="stroke-slate-800"
+            strokeWidth="12"
+            fill="transparent"
+          />
+          {/* 進捗を示す円 */}
+          <circle
+            cx="100"
+            cy="100"
+            r={radius}
+            className={`${isPositive ? 'stroke-emerald-500' : 'stroke-rose-500'} transition-all duration-500 ease-out`}
+            strokeWidth="12"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            fill="transparent"
+          />
+        </svg>
+
+        {/* 中央のテキスト情報 */}
+        <div className="absolute flex flex-col items-center justify-center text-center">
+          <span className="text-[10px] text-slate-400 font-bold tracking-wider uppercase">目標利益の達成度</span>
+          <span className={`text-2xl font-black ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+            {progress.toFixed(1)}%
+          </span>
+          <span className="text-[11px] text-slate-400 mt-0.5">
+            利益: ¥{(currentProfit ?? 0).toLocaleString()}
+          </span>
+        </div>
+      </div>
+
+      {/* 数値詳細表示（売上高、コスト、利益、目標利益） */}
+      <div className="mt-4 w-full grid grid-cols-2 gap-3 border-t border-slate-800 pt-4 text-xs">
+        {/* 売上高 */}
+        <div className="bg-slate-800/40 p-2.5 rounded-lg border border-slate-800">
+          <p className="text-slate-400 font-medium">売上高</p>
+          <p className="text-sm font-bold text-emerald-400 mt-0.5">
+            ¥{(totalRevenue ?? 0).toLocaleString()}
+          </p>
+        </div>
+
+        {/* コスト */}
+        <div className="bg-slate-800/40 p-2.5 rounded-lg border border-slate-800">
+          <p className="text-slate-400 font-medium">コスト</p>
+          <p className="text-sm font-bold text-rose-400 mt-0.5">
+            ¥{(totalCost ?? 0).toLocaleString()}
+          </p>
+        </div>
+
+        {/* 現在の利益 (売上 - コスト) */}
+        <div className="bg-slate-800/40 p-2.5 rounded-lg border border-slate-800">
+          <p className="text-slate-400 font-medium">現在の利益</p>
+          <p className={`text-sm font-bold mt-0.5 ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+            ¥{(currentProfit ?? 0).toLocaleString()}
+          </p>
+        </div>
+
+        {/* 目標利益 */}
+        <div className="bg-slate-800/40 p-2.5 rounded-lg border border-slate-800">
+          <p className="text-slate-400 font-medium">目標利益</p>
+          <p className="text-sm font-bold text-amber-400 mt-0.5">
+            ¥{goal.toLocaleString()}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};

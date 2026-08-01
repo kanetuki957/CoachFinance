@@ -1,0 +1,85 @@
+import React from 'react';
+import { useFinance } from '../context/FinanceContext';
+import { Receipt, Trash2 } from 'lucide-react';
+
+export const TransactionList = () => {
+  const { transactions, deleteTransaction } = useFinance();
+
+  // 日付の降順（新しい順）に並び替え
+  const sortedTransactions = [...transactions].sort(
+    (a, b) => new Date(b.date) - new Date(a.date)
+  );
+
+  if (sortedTransactions.length === 0) {
+    return (
+      <div className="w-full bg-slate-900 border border-slate-800 rounded-xl p-6 text-center text-slate-500 text-sm">
+        この月の記録はまだありません
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-white space-y-3">
+      <div className="flex items-center gap-2 border-b border-slate-800 pb-2 text-slate-400 text-xs font-bold">
+        <Receipt className="w-4 h-4 text-emerald-400" />
+        <span>収支履歴・メモ</span>
+      </div>
+
+      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+        {sortedTransactions.map((item) => {
+          // typeが 'cost' 以外（'revenue' または 未定義）は売上として扱う
+          const isRevenue = item.type !== 'cost';
+
+          return (
+            <div
+              key={item.id}
+              className="flex items-center justify-between p-3 bg-slate-800/60 rounded-lg border border-slate-800 hover:bg-slate-800 transition"
+            >
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400 font-mono">{item.date}</span>
+                  {/* 売上 / コスト のラベルバッジ */}
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
+                      isRevenue
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                    }`}
+                  >
+                    {isRevenue ? '売上' : 'コスト'}
+                  </span>
+                </div>
+                <div className="text-sm font-medium text-slate-200">
+                  {item.note || <span className="text-slate-500 italic">メモなし</span>}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {/* 金額の表示（売上は緑＋、コストは赤ー） */}
+                <div
+                  className={`text-sm font-bold ${
+                    isRevenue ? 'text-emerald-400' : 'text-rose-400'
+                  }`}
+                >
+                  {isRevenue ? '+' : '-'}¥{item.amount.toLocaleString()}
+                </div>
+
+                {/* 削除ボタン */}
+                {deleteTransaction && (
+                  <button
+                    onClick={() => deleteTransaction(item.id)}
+                    className="text-slate-500 hover:text-rose-400 p-1 transition-colors"
+                    title="削除"
+                    aria-label="削除"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
