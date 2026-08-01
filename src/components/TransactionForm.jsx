@@ -6,7 +6,7 @@ export const TransactionForm = () => {
   const { addTransaction, selectedMonth } = useFinance();
   const [isOpen, setIsOpen] = useState(false);
   
-  // 新しく追加: 売上(revenue)かコスト(cost)かの種別ステート
+  // 売上(revenue)かコスト(cost)かの種別ステート
   const [type, setType] = useState('revenue'); 
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
@@ -55,7 +55,7 @@ export const TransactionForm = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* 【追加】売上 / コスト 切り替えタブ */}
+              {/* 売上 / コスト 切り替えタブ */}
               <div className="grid grid-cols-2 gap-2 p-1 bg-slate-800 rounded-xl">
                 <button
                   type="button"
@@ -66,7 +66,7 @@ export const TransactionForm = () => {
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  売上 (+ revenue)
+                  売上
                 </button>
                 <button
                   type="button"
@@ -77,7 +77,7 @@ export const TransactionForm = () => {
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  コスト (- cost)
+                  コスト
                 </button>
               </div>
 
@@ -93,12 +93,12 @@ export const TransactionForm = () => {
                 />
               </div>
 
-              {/* 金額入力 */}
+              {/* 金額入力（例を削除） */}
               <div>
                 <label className="block text-xs text-slate-400 mb-1">金額 (円)</label>
                 <input
                   type="number"
-                  placeholder={type === 'revenue' ? "例: 50000" : "例: 10000"}
+                  placeholder="0"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-emerald-500"
@@ -107,19 +107,19 @@ export const TransactionForm = () => {
                 />
               </div>
 
-              {/* メモ入力 */}
+              {/* メモ入力（例を削除） */}
               <div>
                 <label className="block text-xs text-slate-400 mb-1">メモ (任意)</label>
                 <input
                   type="text"
-                  placeholder={type === 'revenue' ? "例: 個別指導コーチング代" : "例: ツール月額利用料"}
+                  placeholder=""
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
-              {/* ボタンの色も種別に応じて変化 */}
+              {/* 追加ボタン */}
               <button
                 type="submit"
                 className={`w-full font-bold py-3 rounded-xl transition-colors mt-2 ${
