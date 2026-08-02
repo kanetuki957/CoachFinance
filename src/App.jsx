@@ -5,8 +5,7 @@ import { GoalProgressCircle } from './components/GoalProgressCircle';
 import { CharacterEvolution } from './components/CharacterEvolution';
 import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
-import { Analytics } from "@vercel/analytics/next"
-//import { IncomeList } from './components/IncomeList';
+import { Analytics } from "@vercel/analytics/react";
 
 export default function App() {
   return (
@@ -40,6 +39,7 @@ export default function App() {
 
         {/* 機能3: 利益入力フォームボタン */}
         <TransactionForm />
+        <Analytics />
       </div>
     </FinanceProvider>
   );
