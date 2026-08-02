@@ -5,6 +5,7 @@ import { GoalProgressCircle } from './components/GoalProgressCircle';
 import { CharacterEvolution } from './components/CharacterEvolution';
 import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
+import { Analytics } from "@vercel/analytics/next"
 //import { IncomeList } from './components/IncomeList';
 
 export default function App() {
