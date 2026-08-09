@@ -124,10 +124,9 @@ const Home = () => {
               </div>
             )}
             </section>
-            </div>
 
             {(activeGoal.completedTasks?.length ?? 0) > 0 && (
-              <section className="-mx-2 mt-2 -translate-y-6 rounded-3xl border border-slate-800 bg-slate-900/60 p-4">
+              <section className="-mx-2 mt-2 rounded-3xl border border-slate-800 bg-slate-900/60 p-4">
                 <button
                   onClick={() => setIsHistoryOpen((isOpen) => !isOpen)}
                   className="flex w-full items-center justify-between text-left"
@@ -159,6 +158,7 @@ const Home = () => {
                 )}
               </section>
             )}
+            </div>
           </>
         ) : (
           <section className="rounded-3xl border border-dashed border-slate-700 bg-slate-900/60 p-8 text-center">
