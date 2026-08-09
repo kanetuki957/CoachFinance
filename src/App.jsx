@@ -75,7 +75,7 @@ const Home = () => {
         <header className="mb-2 flex items-center justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-400">Coach</p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight">今日の目標</h1>
+            <h1 className="mt-1 text-2xl font-black tracking-tight">今回の目標</h1>
           </div>
         </header>
 
