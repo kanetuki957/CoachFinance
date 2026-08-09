@@ -81,7 +81,7 @@ const Home = () => {
 
         {activeGoal ? (
           <>
-            <div className="flex flex-1 flex-col justify-center">
+            <div className="flex flex-1 -translate-y-6 flex-col justify-center">
             <section className="mx-3 rounded-3xl border border-emerald-400/30 bg-gradient-to-br from-emerald-400/15 to-slate-900 p-4 shadow-xl shadow-emerald-950/20">
             <div className="mb-2 flex items-center gap-2 text-xs font-bold text-emerald-300">
               <span className="text-xl">{activeGoal.icon}</span>
