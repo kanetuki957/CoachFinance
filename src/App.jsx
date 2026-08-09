@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
-import { Check, X } from 'lucide-react';
+import { Check, ChevronDown, X } from 'lucide-react';
 import { Target } from 'lucide-react';
 import { DAILY_TASKS, FinanceProvider, useFinance } from './context/FinanceContext';
 import { TransactionForm } from './components/TransactionForm';
@@ -51,6 +51,7 @@ const Home = () => {
   const { activeGoal, completeTask } = useFinance();
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const [memo, setMemo] = useState('');
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const dayNumber = activeGoal ? getDayNumber(activeGoal.startedOn) : 1;
   const tasks = activeGoal ? (DAILY_TASKS[activeGoal.categoryId] ?? DAILY_TASKS.life)[dayNumber - 1] : [];
   const taskIndex = activeGoal?.taskDay === dayNumber ? activeGoal.taskIndex : 0;
@@ -126,23 +127,35 @@ const Home = () => {
 
             {(activeGoal.completedTasks?.length ?? 0) > 0 && (
               <section className="mt-5 rounded-3xl border border-slate-800 bg-slate-900/60 p-6">
-                <h2 className="text-lg font-black">完了したタスクとメモ</h2>
-                <div className="mt-4 space-y-3">
-                  {[...activeGoal.completedTasks].reverse().map((item) => (
-                    <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-800/60 p-4">
-                      <div className="flex items-start gap-3">
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-400">
-                          <Check className="h-4 w-4 stroke-[3]" />
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-emerald-300">Day {item.day}</p>
-                          <p className="mt-1 text-sm font-bold leading-relaxed text-slate-100">{item.task}</p>
-                          {item.note && <p className="mt-3 border-t border-slate-700 pt-3 text-sm leading-relaxed text-slate-300">{item.note}</p>}
+                <button
+                  onClick={() => setIsHistoryOpen((isOpen) => !isOpen)}
+                  className="flex w-full items-center justify-between text-left"
+                  aria-expanded={isHistoryOpen}
+                >
+                  <span className="text-lg font-black">完了したタスクとメモ</span>
+                  <span className="flex items-center gap-2 text-sm font-bold text-emerald-300">
+                    {activeGoal.completedTasks.length}件
+                    <ChevronDown className={`h-5 w-5 transition-transform ${isHistoryOpen ? 'rotate-180' : ''}`} />
+                  </span>
+                </button>
+                {isHistoryOpen && (
+                  <div className="mt-4 space-y-3">
+                    {[...activeGoal.completedTasks].reverse().map((item) => (
+                      <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-800/60 p-4">
+                        <div className="flex items-start gap-3">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-400">
+                            <Check className="h-4 w-4 stroke-[3]" />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-emerald-300">Day {item.day}</p>
+                            <p className="mt-1 text-sm font-bold leading-relaxed text-slate-100">{item.task}</p>
+                            {item.note && <p className="mt-3 border-t border-slate-700 pt-3 text-sm leading-relaxed text-slate-300">{item.note}</p>}
+                          </div>
                         </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
               </section>
             )}
           </>
