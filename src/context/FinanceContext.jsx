@@ -1,171 +1,139 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-const FinanceContext = createContext(null);
+const GoalContext = createContext(null);
+const STORAGE_KEY = 'coach_goal_data_v1';
 
-const STORAGE_KEY = 'coach_finance_data_v3';
-
-// YYYY-MM フォーマットを取得するヘルパー関数
-const getFormattedMonth = (date = new Date()) => {
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  return `${yyyy}-${mm}`;
+const getLocalDateKey = () => {
+  const today = new Date();
+  const offset = today.getTimezoneOffset() * 60 * 1000;
+  return new Date(today.getTime() - offset).toISOString().slice(0, 10);
 };
 
-const INITIAL_STATE = {
-  // 月ごとの目標利益 { "2026-08": 500000 }
-  monthlyTargetProfits: {
-    [getFormattedMonth()]: 500000
+export const GOAL_CATEGORIES = [
+  {
+    id: 'exercise',
+    icon: '🏋️',
+    name: '筋トレ・運動',
+    color: 'emerald',
+    goals: [
+      '1週間で3回筋トレする',
+      '毎日10分だけ運動する',
+      '1週間で腕立て伏せを合計100回する',
+      '毎日5,000歩以上歩く',
+      '1週間で腹筋を合計100回する',
+    ],
   },
-  // 取引データ（type: 'revenue' | 'cost'）
-  transactions: [
-    {
-      id: '1',
-      type: 'revenue',
-      amount: 50000,
-      date: `${getFormattedMonth()}-01`,
-      note: 'コーチング契約1件目'
-    },
-    {
-      id: '2',
-      type: 'cost',
-      amount: 10000,
-      date: `${getFormattedMonth()}-02`,
-      note: 'ツール利用料・システム費'
-    }
-  ]
+  {
+    id: 'study',
+    icon: '📚',
+    name: '勉強・資格',
+    color: 'sky',
+    goals: [
+      '毎日30分勉強して、1週間で3時間以上勉強する',
+      '参考書を10ページ進める',
+      'プログラミングを毎日30分、1週間続ける',
+      '資格の問題を50問解く',
+      '新しい知識を1つ身につける',
+    ],
+  },
+  {
+    id: 'life',
+    icon: '🌱',
+    name: '生活・習慣',
+    color: 'amber',
+    goals: [
+      '毎朝決めた時間に起きる',
+      '寝る前に5分だけ部屋を片付ける',
+      '1日1回、感謝したことを記録する',
+      '水を1日1.5リットル飲む',
+      'SNSを見ない時間を1時間つくる',
+    ],
+  },
+];
+
+export const DAILY_TASKS = {
+  exercise: [
+    ['筋トレする時間を決める', 'トレーニングメニューを決める', '10分間筋トレする'],
+    ['10分間筋トレする', '前日の記録を確認する'],
+    ['15分間筋トレする', 'タンパク質を意識して食事する'],
+    ['休養する', '5分間ストレッチする'],
+    ['15分間筋トレする', '前回より1種目多く取り組む'],
+    ['20分間筋トレする', 'これまでの成果を記録する'],
+    ['20分間筋トレする', '1週間のトレーニングを振り返る', '目標達成 🎉'],
+  ],
+  study: [
+    ['勉強する時間と場所を決める', '10分間だけ取り組む', '今日学ぶことを1つ決める'],
+    ['30分間勉強する', '前日の内容を5分復習する'],
+    ['30分間勉強する', 'わからなかったことを調べる'],
+    ['20分間復習する', '5分休憩して学習環境を整える'],
+    ['30分間勉強する', '問題を5問解く'],
+    ['30分間勉強する', '学んだことをメモにまとめる'],
+    ['30分間勉強する', '1週間の学びを振り返る', '目標達成 🎉'],
+  ],
+  life: [
+    ['今日の習慣を行う時間を決める', '5分だけ始める', 'できたら自分を褒める'],
+    ['昨日より少し早く取りかかる', 'できたことを1つ記録する'],
+    ['習慣を10分続ける', '環境をひとつ整える'],
+    ['無理せず休む', '5分だけ習慣に触れる'],
+    ['習慣を10分続ける', '小さな工夫をひとつ加える'],
+    ['習慣を15分続ける', 'ここまでの変化を記録する'],
+    ['習慣を15分続ける', '1週間を振り返る', '目標達成 🎉'],
+  ],
 };
 
 export const FinanceProvider = ({ children }) => {
-  // 現在選択されている年月 (例: "2026-08")
-  const [selectedMonth, setSelectedMonth] = useState(getFormattedMonth());
-
-  const [state, setState] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to load state from LocalStorage', e);
-      }
+  const [activeGoal, setActiveGoal] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY))?.activeGoal ?? null;
+    } catch {
+      return null;
     }
-    return INITIAL_STATE;
   });
 
-  // 状態の変更をLocalStorageへ保存
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal }));
+  }, [activeGoal]);
 
-  // 選択中の月の「目標利益」（未設定の場合はデフォルト50万円）
-  const targetProfit = state.monthlyTargetProfits[selectedMonth] ?? 500000;
-
-  // 選択中の月の取引リスト
-  const currentMonthTransactions = state.transactions.filter(t => 
-    t.date.startsWith(selectedMonth)
-  );
-
-  // 1. 売上高（Revenue）の合計
-  const totalRevenue = currentMonthTransactions.reduce((sum, item) => {
-    return item.type === 'revenue' ? sum + item.amount : sum;
-  }, 0);
-
-  // 2. コスト（Cost）の合計
-  const totalCost = currentMonthTransactions.reduce((sum, item) => {
-    return item.type === 'cost' ? sum + item.amount : sum;
-  }, 0);
-
-  // 3. 現在の利益（売上高 - コスト）
-  const currentProfit = totalRevenue - totalCost;
-
-  // 4. 目標利益に対する達成率（%）- 整数に四捨五入
-  const rawProgress = targetProfit > 0
-    ? (currentProfit / targetProfit) * 100
-    : 0;
-  
-  // マイナスは0%にし、小数点以下を四捨五入（例: 8%）
-  const achievementRate = Math.max(0, Math.round(rawProgress));
-
-  // 取引（売上またはコスト）を追加する関数
-  const addTransaction = (amount, note = '', type = 'revenue', dateStr) => {
-    if (isNaN(amount) || amount <= 0) return;
-
-    // 日付が指定されていない場合は現在選択中の月の1日を設定
-    const targetDate = dateStr || `${selectedMonth}-01`;
-
-    const newTransaction = {
-      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-      type, // 'revenue' または 'cost'
-      amount: Number(amount),
-      date: targetDate,
-      note
-    };
-
-    setState(prev => ({
-      ...prev,
-      transactions: [newTransaction, ...prev.transactions]
-    }));
+  const selectGoal = (category, title) => {
+    setActiveGoal({
+      id: `${category.id}-${Date.now()}`,
+      categoryId: category.id,
+      categoryName: category.name,
+      icon: category.icon,
+      color: category.color,
+      title,
+      startedOn: getLocalDateKey(),
+      taskDay: 1,
+      taskIndex: 0,
+      completedTasks: [],
+    });
   };
 
-  // 売上を追加
-  const addRevenue = (amount, note = '', dateStr) => addTransaction(amount, note, 'revenue', dateStr);
-
-  // コストを追加
-  const addCost = (amount, note = '', dateStr) => addTransaction(amount, note, 'cost', dateStr);
-
-  // 取引の削除
-  const deleteTransaction = (id) => {
-    setState(prev => ({
-      ...prev,
-      transactions: prev.transactions.filter(t => t.id !== id)
-    }));
-  };
-
-  // 選択中の月の「目標利益」を設定・更新
-  const updateTargetProfit = (profit) => {
-    if (isNaN(profit) || profit < 0) return;
-    setState(prev => ({
-      ...prev,
-      monthlyTargetProfits: {
-        ...prev.monthlyTargetProfits,
-        [selectedMonth]: Number(profit)
-      }
-    }));
-  };
-
-  // 月を切り替える (例: offset = -1 で前月, +1 で翌月)
-  const changeMonth = (offset) => {
-    const [year, month] = selectedMonth.split('-').map(Number);
-    const date = new Date(year, month - 1 + offset, 1);
-    setSelectedMonth(getFormattedMonth(date));
+  const completeTask = (dayNumber, taskCount, task, note) => {
+    setActiveGoal((current) => {
+      if (!current) return current;
+      const currentIndex = current.taskDay === dayNumber ? current.taskIndex : 0;
+      return {
+        ...current,
+        taskDay: dayNumber,
+        taskIndex: Math.min(currentIndex + 1, taskCount),
+        completedTasks: [
+          ...(current.completedTasks ?? []),
+          { id: `${Date.now()}-${currentIndex}`, day: dayNumber, task, note: note.trim() },
+        ],
+      };
+    });
   };
 
   return (
-    <FinanceContext.Provider value={{
-      selectedMonth,
-      targetProfit,            // 目標利益
-      totalRevenue,            // 売上高
-      totalCost,               // コスト
-      currentProfit,           // 現在の利益（売上高 - コスト）
-      achievementRate,         // 👈 ここ！ GoalProgressCircleが読み込めるように追加
-      profitProgressPercentage: achievementRate, // 互換性のため残す
-      transactions: currentMonthTransactions, // 当月の全取引一覧
-      addTransaction,          // 取引追加(type指定可)
-      addRevenue,              // 売上追加
-      addCost,                 // コスト追加
-      deleteTransaction,       // 取引削除
-      updateTargetProfit,      // 目標利益の更新
-      changeMonth,
-      setSelectedMonth
-    }}>
+    <GoalContext.Provider value={{ activeGoal, selectGoal, completeTask }}>
       {children}
-    </FinanceContext.Provider>
+    </GoalContext.Provider>
   );
 };
 
 export const useFinance = () => {
-  const context = useContext(FinanceContext);
-  if (!context) {
-    throw new Error('useFinance must be used within a FinanceProvider');
-  }
+  const context = useContext(GoalContext);
+  if (!context) throw new Error('useFinance must be used within a FinanceProvider');
   return context;
 };

@@ -1,136 +1,75 @@
 import React, { useState } from 'react';
-import { Plus, X } from 'lucide-react';
-import { useFinance } from '../context/FinanceContext';
+import { ChevronRight, Plus, X } from 'lucide-react';
+import { GOAL_CATEGORIES, useFinance } from '../context/FinanceContext';
 
 export const TransactionForm = () => {
-  const { addTransaction, selectedMonth } = useFinance();
+  const { selectGoal } = useFinance();
   const [isOpen, setIsOpen] = useState(false);
-  
-  // 売上(revenue)かコスト(cost)かの種別ステート
-  const [type, setType] = useState('revenue'); 
-  const [amount, setAmount] = useState('');
-  const [note, setNote] = useState('');
-  
-  // デフォルトで選択中の月の今日（または1日）をセット
-  const todayStr = `${selectedMonth}-${String(new Date().getDate()).padStart(2, '0')}`;
-  const [date, setDate] = useState(todayStr);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!amount || isNaN(amount)) return;
-
-    // 金額、メモ、種別(type)、日付をセットして追加
-    addTransaction(Number(amount), note, type, date);
-
-    // フォームリセット
-    setAmount('');
-    setNote('');
-    setType('revenue');
+  const close = () => {
     setIsOpen(false);
+    setSelectedCategory(null);
+  };
+
+  const chooseGoal = (goal) => {
+    selectGoal(selectedCategory, goal);
+    close();
   };
 
   return (
     <>
-      {/* 画面右下の＋ボタン */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-emerald-500 hover:bg-emerald-600 text-slate-950 p-4 rounded-full shadow-lg transition-transform hover:scale-105 z-40"
-        aria-label="収支を記録"
+        className="fixed bottom-6 right-6 z-40 rounded-full bg-emerald-400 p-4 text-slate-950 shadow-lg shadow-emerald-950/60 transition hover:scale-105 hover:bg-emerald-300"
+        aria-label="目標を追加"
       >
-        <Plus className="w-6 h-6 stroke-[3]" />
+        <Plus className="h-6 w-6 stroke-[3]" />
       </button>
 
-      {/* 入力モーダル */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-6 text-white shadow-2xl space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-              <h3 className="text-lg font-bold">収支の記録</h3>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center">
+          <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-5 text-white shadow-2xl">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">New goal</p>
+                <h2 className="mt-1 text-xl font-black">{selectedCategory ? selectedCategory.name : 'カテゴリを選ぶ'}</h2>
+              </div>
+              <button onClick={close} className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white" aria-label="閉じる">
+                <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* 売上 / コスト 切り替えタブ */}
-              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-800 rounded-xl">
-                <button
-                  type="button"
-                  onClick={() => setType('revenue')}
-                  className={`py-2 text-xs font-bold rounded-lg transition-all ${
-                    type === 'revenue'
-                      ? 'bg-emerald-500 text-slate-950 shadow'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  売上
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setType('cost')}
-                  className={`py-2 text-xs font-bold rounded-lg transition-all ${
-                    type === 'cost'
-                      ? 'bg-rose-500 text-white shadow'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  コスト
-                </button>
+            {!selectedCategory ? (
+              <div className="space-y-3">
+                {GOAL_CATEGORIES.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category)}
+                    className="flex w-full items-center gap-4 rounded-xl border border-slate-700 bg-slate-800/70 p-4 text-left transition hover:border-emerald-400/60 hover:bg-slate-800"
+                  >
+                    <span className="text-3xl">{category.icon}</span>
+                    <span className="flex-1 font-bold">{category.name}</span>
+                    <ChevronRight className="h-5 w-5 text-slate-400" />
+                  </button>
+                ))}
               </div>
-
-              {/* 日付入力 */}
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">日付</label>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-emerald-500"
-                  required
-                />
-              </div>
-
-              {/* 金額入力（例を削除） */}
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">金額 (円)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-emerald-500"
-                  required
-                  autoFocus
-                />
-              </div>
-
-              {/* メモ入力（例を削除） */}
-              <div>
-                <label className="block text-xs text-slate-400 mb-1">メモ (任意)</label>
-                <input
-                  type="text"
-                  placeholder=""
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              {/* 追加ボタン */}
-              <button
-                type="submit"
-                className={`w-full font-bold py-3 rounded-xl transition-colors mt-2 ${
-                  type === 'revenue'
-                    ? 'bg-emerald-500 hover:bg-emerald-600 text-slate-950'
-                    : 'bg-rose-500 hover:bg-rose-600 text-white'
-                }`}
-              >
-                {type === 'revenue' ? '売上を追加する' : 'コストを追加する'}
-              </button>
-            </form>
+            ) : (
+              <>
+                <button onClick={() => setSelectedCategory(null)} className="mb-3 text-sm font-bold text-slate-400 hover:text-white">← カテゴリに戻る</button>
+                <div className="max-h-[55vh] space-y-2 overflow-y-auto pr-1">
+                  {selectedCategory.goals.map((goal) => (
+                    <button
+                      key={goal}
+                      onClick={() => chooseGoal(goal)}
+                      className="w-full rounded-xl border border-slate-700 bg-slate-800/70 p-4 text-left text-sm font-bold leading-relaxed transition hover:border-emerald-400 hover:bg-emerald-400/10"
+                    >
+                      {goal}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
