@@ -37,7 +37,7 @@ const GoalProgress = ({ completed, total }) => {
             style={{ transition: 'stroke-dashoffset 500ms ease' }}
           />
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center [&>span:last-child]:hidden">
           <span className="text-3xl font-black text-emerald-400">{percentage}%</span>
           <span className="mt-1 text-xs font-bold text-slate-400">{completed} / {total} タスク</span>
         </div>
@@ -77,21 +77,20 @@ const Home = () => {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-400">Coach</p>
             <h1 className="mt-1 text-2xl font-black tracking-tight">今日の目標</h1>
           </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 text-xl">✨</div>
         </header>
 
         {activeGoal ? (
           <>
-            <section className="rounded-3xl border border-emerald-400/30 bg-gradient-to-br from-emerald-400/15 to-slate-900 p-6 shadow-xl shadow-emerald-950/20">
-            <div className="mb-6 flex items-center gap-2 text-sm font-bold text-emerald-300">
+            <section className="mx-3 rounded-3xl border border-emerald-400/30 bg-gradient-to-br from-emerald-400/15 to-slate-900 p-5 shadow-xl shadow-emerald-950/20">
+            <div className="mb-4 flex items-center gap-2 text-sm font-bold text-emerald-300">
               <span className="text-xl">{activeGoal.icon}</span>
               {activeGoal.categoryName}
             </div>
             <div className="flex gap-4">
               <Target className="mt-1 h-6 w-6 shrink-0 text-emerald-400" />
-              <p className="text-2xl font-black leading-snug tracking-tight">{activeGoal.title}</p>
+              <p className="text-xl font-black leading-snug tracking-tight">{activeGoal.title}</p>
             </div>
-            <p className="mt-7 border-t border-white/10 pt-4 text-sm leading-relaxed text-slate-300">小さな一歩でも大丈夫。今日できることから始めよう。</p>
+            <p className="mt-5 border-t border-white/10 pt-3 text-sm leading-relaxed text-slate-300">小さな一歩でも大丈夫。今日できることから始めよう。</p>
             </section>
 
             <GoalProgress completed={completedCount} total={allTasks.length} />
