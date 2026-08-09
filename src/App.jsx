@@ -19,9 +19,9 @@ const GoalProgress = ({ completed, total }) => {
   const dashOffset = circumference - (percentage / 100) * circumference;
 
   return (
-    <section className="my-6 flex flex-col items-center rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+    <section className="my-2 flex flex-col items-center rounded-3xl border border-slate-800 bg-slate-900/70 p-3">
       <p className="text-sm font-bold text-slate-300">7日間の進捗</p>
-      <div className="relative mt-4 h-44 w-44">
+      <div className="relative mt-1 h-28 w-28">
         <svg className="h-full w-full -rotate-90" viewBox="0 0 128 128" aria-label={`進捗 ${percentage}%`}>
           <circle cx="64" cy="64" r={radius} fill="none" stroke="#1e293b" strokeWidth="11" />
           <circle
@@ -38,7 +38,7 @@ const GoalProgress = ({ completed, total }) => {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center [&>span:last-child]:hidden">
-          <span className="text-3xl font-black text-emerald-400">{percentage}%</span>
+          <span className="text-2xl font-black text-emerald-400">{percentage}%</span>
           <span className="mt-1 text-xs font-bold text-slate-400">{completed} / {total} タスク</span>
         </div>
       </div>
@@ -70,9 +70,9 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-8">
-        <header className="mb-10 flex items-center justify-between">
+    <div className={`${isHistoryOpen ? 'min-h-screen' : 'h-[100dvh] overflow-hidden'} bg-slate-950 text-slate-100`}>
+      <main className={`mx-auto flex w-full max-w-md flex-col px-5 pb-6 pt-4 ${isHistoryOpen ? 'min-h-screen' : 'h-full justify-between overflow-hidden'}`}>
+        <header className="mb-2 flex items-center justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-400">Coach</p>
             <h1 className="mt-1 text-2xl font-black tracking-tight">今日の目標</h1>
@@ -81,27 +81,27 @@ const Home = () => {
 
         {activeGoal ? (
           <>
-            <section className="mx-3 rounded-3xl border border-emerald-400/30 bg-gradient-to-br from-emerald-400/15 to-slate-900 p-5 shadow-xl shadow-emerald-950/20">
-            <div className="mb-4 flex items-center gap-2 text-sm font-bold text-emerald-300">
+            <section className="mx-3 rounded-3xl border border-emerald-400/30 bg-gradient-to-br from-emerald-400/15 to-slate-900 p-4 shadow-xl shadow-emerald-950/20">
+            <div className="mb-2 flex items-center gap-2 text-xs font-bold text-emerald-300">
               <span className="text-xl">{activeGoal.icon}</span>
               {activeGoal.categoryName}
             </div>
             <div className="flex gap-4">
               <Target className="mt-1 h-6 w-6 shrink-0 text-emerald-400" />
-              <p className="text-xl font-black leading-snug tracking-tight">{activeGoal.title}</p>
+              <p className="text-lg font-black leading-snug tracking-tight">{activeGoal.title}</p>
             </div>
-            <p className="mt-5 border-t border-white/10 pt-3 text-sm leading-relaxed text-slate-300">小さな一歩でも大丈夫。今日できることから始めよう。</p>
+            <p className="mt-3 border-t border-white/10 pt-2 text-xs leading-relaxed text-slate-300">小さな一歩でも大丈夫。今日できることから始めよう。</p>
             </section>
 
             <GoalProgress completed={completedCount} total={allTasks.length} />
 
-            <section className="mt-5 rounded-3xl border border-slate-800 bg-slate-900/80 p-6">
+            <section className="mt-2 rounded-3xl border border-slate-800 bg-slate-900/80 p-3">
             <div className="flex items-baseline justify-between">
               <h2 className="text-lg font-black">今日のタスク</h2>
               <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-black text-emerald-300">Day {dayNumber}</span>
             </div>
             {currentTask ? (
-              <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-800/70 p-4">
+              <div className="mt-2 rounded-2xl border border-slate-700 bg-slate-800/70 p-3">
                 <p className="text-xs font-bold text-slate-400">{taskIndex + 1} / {tasks.length}</p>
                 <div className="mt-3 flex items-center gap-4">
                   <p className="flex-1 text-base font-bold leading-relaxed text-slate-100">{currentTask}</p>
@@ -125,7 +125,7 @@ const Home = () => {
             </section>
 
             {(activeGoal.completedTasks?.length ?? 0) > 0 && (
-              <section className="mt-5 rounded-3xl border border-slate-800 bg-slate-900/60 p-6">
+              <section className="-mx-2 mt-2 rounded-3xl border border-slate-800 bg-slate-900/60 p-4">
                 <button
                   onClick={() => setIsHistoryOpen((isOpen) => !isOpen)}
                   className="flex w-full items-center justify-between text-left"
@@ -138,7 +138,7 @@ const Home = () => {
                   </span>
                 </button>
                 {isHistoryOpen && (
-                  <div className="mt-4 space-y-3">
+                  <div className="mt-3 space-y-3">
                     {[...activeGoal.completedTasks].reverse().map((item) => (
                       <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-800/60 p-4">
                         <div className="flex items-start gap-3">
@@ -166,7 +166,7 @@ const Home = () => {
           </section>
         )}
 
-        <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <section className="hidden mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
           <h2 className="font-bold">目標の使い方</h2>
           <p className="mt-2 text-sm leading-relaxed text-slate-400">＋ボタンから「筋トレ・運動」「勉強・資格」などのカテゴリを開き、項目を選択してください。選んだ目標はこの画面の上部に表示されます。</p>
         </section>
