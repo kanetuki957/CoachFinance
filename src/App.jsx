@@ -71,7 +71,7 @@ const Home = () => {
 
   return (
     <div className={`${isHistoryOpen ? 'min-h-screen' : 'h-[100dvh] overflow-hidden'} bg-slate-950 text-slate-100`}>
-      <main className={`mx-auto flex w-full max-w-md flex-col px-5 pb-6 pt-4 ${isHistoryOpen ? 'min-h-screen' : 'h-full justify-between overflow-hidden'}`}>
+      <main className={`mx-auto flex w-full max-w-md flex-col px-5 pb-4 pt-3 ${isHistoryOpen ? 'min-h-screen' : 'h-full justify-between overflow-hidden'}`}>
         <header className="mb-2 flex items-center justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-400">Coach</p>
