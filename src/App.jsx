@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { Check, ChevronDown, X } from 'lucide-react';
 import { Target } from 'lucide-react';
-import { DAILY_TASKS, FinanceProvider, useFinance } from './context/FinanceContext';
+import { FinanceProvider, getGoalTaskPlan, useFinance } from './context/FinanceContext';
 import { TransactionForm } from './components/TransactionForm';
 
 const getDayNumber = (startedOn) => {
@@ -53,10 +53,11 @@ const Home = () => {
   const [memo, setMemo] = useState('');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const dayNumber = activeGoal ? getDayNumber(activeGoal.startedOn) : 1;
-  const tasks = activeGoal ? (DAILY_TASKS[activeGoal.categoryId] ?? DAILY_TASKS.life)[dayNumber - 1] : [];
+  const currentDay = activeGoal ? getGoalTaskPlan(activeGoal)[dayNumber - 1] : null;
+  const tasks = currentDay?.tasks ?? [];
   const taskIndex = activeGoal?.taskDay === dayNumber ? activeGoal.taskIndex : 0;
   const currentTask = tasks[taskIndex];
-  const allTasks = activeGoal ? (DAILY_TASKS[activeGoal.categoryId] ?? DAILY_TASKS.life).flat() : [];
+  const allTasks = activeGoal ? getGoalTaskPlan(activeGoal).flatMap((day) => day.tasks) : [];
   const completedCount = activeGoal?.completedTasks?.length ?? 0;
 
   const openMemo = () => {
@@ -99,7 +100,7 @@ const Home = () => {
             <section className="mt-2 rounded-3xl border border-slate-800 bg-slate-900/80 p-3">
             <div className="flex items-baseline justify-between">
               <h2 className="text-lg font-black">今日のタスク</h2>
-              <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-black text-emerald-300">Day {dayNumber}</span>
+              <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-black text-emerald-300">Day {dayNumber}{currentDay?.title ? `｜${currentDay.title}` : ''}</span>
             </div>
             {currentTask ? (
               <div className="mt-2 rounded-2xl border border-slate-700 bg-slate-800/70 p-3">

@@ -60,11 +60,11 @@ export const TransactionForm = () => {
                 <div className="max-h-[55vh] space-y-2 overflow-y-auto pr-1">
                   {selectedCategory.goals.map((goal) => (
                     <button
-                      key={goal}
+                      key={goal.id}
                       onClick={() => chooseGoal(goal)}
                       className="w-full rounded-xl border border-slate-700 bg-slate-800/70 p-4 text-left text-sm font-bold leading-relaxed transition hover:border-emerald-400 hover:bg-emerald-400/10"
                     >
-                      {goal}
+                      {goal.title}
                     </button>
                   ))}
                 </div>
