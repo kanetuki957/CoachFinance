@@ -7,3 +7,43 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background-color: #020617;
 }
+
+@keyframes companion-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+@keyframes companion-celebrate {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-13px) rotate(3deg); }
+}
+
+@keyframes companion-twinkle {
+  0%, 100% { opacity: .2; transform: scale(.7); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.companion {
+  position: relative;
+  z-index: 1;
+  width: 76px;
+  height: 124px;
+  animation: companion-float 2.8s ease-in-out infinite;
+}
+
+.companion-celebrate { animation-name: companion-celebrate; }
+.companion-head { position: absolute; top: 12px; left: 19px; width: 38px; height: 39px; border: 3px solid #17233d; border-radius: 48% 48% 45% 45%; background: #ffd8b7; z-index: 2; }
+.companion-head i { position: absolute; top: 17px; width: 4px; height: 5px; border-radius: 999px; background: #17233d; }
+.companion-head i:first-child { left: 9px; }.companion-head i:last-child { right: 9px; }
+.companion-hair { position: absolute; top: 6px; left: 16px; width: 45px; height: 28px; border-radius: 55% 55% 35% 35%; background: #29375b; z-index: 3; }
+.companion-hair::after { content: ''; position: absolute; bottom: -9px; left: 4px; width: 37px; height: 14px; border-radius: 50%; background: #29375b; }
+.companion-body { position: absolute; top: 50px; left: 12px; width: 52px; height: 54px; border: 3px solid #17233d; border-radius: 22px 22px 13px 13px; background: #f4b63f; z-index: 2; }
+.companion-heart { display: block; margin-top: 11px; text-align: center; color: #e66c59; font-size: 21px; line-height: 1; }
+.companion-arm, .companion-leg { position: absolute; z-index: 1; width: 12px; border: 3px solid #17233d; background: #ffd8b7; }
+.companion-arm { top: 57px; height: 42px; border-radius: 10px; }.companion-arm-left { left: 3px; transform: rotate(20deg); }.companion-arm-right { right: 3px; transform: rotate(-20deg); }
+.companion-leg { top: 99px; height: 25px; border-radius: 0 0 10px 10px; background: #6388c7; }.companion-leg-left { left: 22px; }.companion-leg-right { right: 22px; }
+.companion-spark { position: absolute; z-index: 2; color: #ffe291; animation: companion-twinkle 1.8s ease-in-out infinite; }.companion-spark-one { top: 35px; left: 27px; }.companion-spark-two { top: 13px; right: 30px; animation-delay: .45s; }.companion-spark-three { top: 81px; right: 15px; animation-delay: .9s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .companion, .companion-spark { animation: none; }
+}
