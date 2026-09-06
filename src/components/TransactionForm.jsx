@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronRight, Plus, X } from 'lucide-react';
 import { GOAL_CATEGORIES, useFinance } from '../context/FinanceContext';
 
-export const TransactionForm = () => {
+export const TransactionForm = ({ openOnMount = false }) => {
   const { selectGoal } = useFinance();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  useEffect(() => {
+    if (openOnMount) setIsOpen(true);
+  }, [openOnMount]);
 
   const close = () => {
     setIsOpen(false);
@@ -32,7 +36,7 @@ export const TransactionForm = () => {
           <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-5 text-white shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">New goal</p>
+                <p className="text-xs font-bold tracking-widest text-emerald-400">今回の目標</p>
                 <h2 className="mt-1 text-xl font-black">{selectedCategory ? selectedCategory.name : 'カテゴリを選ぶ'}</h2>
               </div>
               <button onClick={close} className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white" aria-label="閉じる">

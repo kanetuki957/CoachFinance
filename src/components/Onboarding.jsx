@@ -1,0 +1,30 @@
+import React, { useState } from 'react';
+import { ArrowLeft, Check, ChevronRight, Sparkles } from 'lucide-react';
+import genderMale from '../assets/characters/ChatGPT Image 2026年8月15日 10_43_54 (1).png';
+import genderFemale from '../assets/characters/ChatGPT Image 2026年8月15日 10_43_54 (2).png';
+import maleOne from '../assets/characters/ChatGPT Image 2026年8月15日 10_53_30 (1).png';
+import maleTwo from '../assets/characters/ChatGPT Image 2026年8月15日 10_53_30 (2).png';
+import maleThree from '../assets/characters/ChatGPT Image 2026年8月15日 10_53_30 (3).png';
+import femaleOne from '../assets/characters/ChatGPT Image 2026年8月15日 10_53_30 (4).png';
+import femaleTwo from '../assets/characters/ChatGPT Image 2026年8月15日 10_53_30 (5).png';
+import femaleThree from '../assets/characters/ChatGPT Image 2026年8月15日 10_53_30 (6).png';
+import { useFinance } from '../context/FinanceContext';
+
+const problems = ['何をやっても続かない', 'やる気が出ない', 'つい先延ばししてしまう', '自分に自信がない', '毎日だらだらしてしまう', '何から始めればいいか分からない', '目標がない', '生活習慣を変えたい', '勉強したいけど続かない', '運動したいけど続かない', 'お金を稼ぎたいけど行動できない', 'その他'];
+const groups = [['💪 健康・運動', ['運動習慣をつけたい', '筋トレを続けたい', '毎日歩く習慣をつけたい', '健康的な生活をしたい']], ['📚 勉強・スキル', ['資格を取得したい', 'プログラミングを勉強したい', '毎日勉強する習慣をつけたい', '新しいスキルを身につけたい']], ['💰 仕事・お金', ['収入を増やしたい', '副業を始めたい', '自分の力でお金を稼ぎたい', 'キャリアアップしたい']], ['🏠 生活', ['朝早く起きられるようになりたい', '部屋をきれいに保ちたい', '規則正しい生活をしたい', 'SNSを見る時間を減らしたい']], ['🧠 自分磨き', ['自分に自信を持ちたい', '行動力をつけたい', '継続力をつけたい', '先延ばしをやめたい']]];
+const characters = { male: [['male_01', 'ショートヘア', maleOne], ['male_02', 'ナチュラル', maleTwo], ['male_03', 'アクティブ', maleThree]], female: [['female_01', 'ショートヘア', femaleOne], ['female_02', 'ナチュラル', femaleTwo], ['female_03', 'ロングヘア', femaleThree]] };
+const toggle = (items, item) => items.includes(item) ? items.filter((value) => value !== item) : [...items, item];
+
+export const Onboarding = ({ onComplete }) => {
+  const { profile, setProfile } = useFinance();
+  const [step, setStep] = useState(0);
+  const [gender, setGender] = useState(profile?.gender ?? '');
+  const [selectedCharacter, setSelectedCharacter] = useState(profile?.selectedCharacter ?? '');
+  const [currentProblems, setCurrentProblems] = useState(profile?.currentProblems ?? []);
+  const [idealGoals, setIdealGoals] = useState(profile?.idealGoals ?? []);
+  const ready = [gender, selectedCharacter, currentProblems.length, idealGoals.length][step];
+  const chip = (item, selected, handler) => <button key={item} onClick={handler} className={`rounded-2xl border px-3 py-2.5 text-left text-sm font-bold transition ${selected ? 'border-amber-300 bg-amber-300 text-slate-950' : 'border-white/10 bg-slate-800 text-slate-200 hover:border-white/30'}`}>{selected && <Check className="mr-1 inline h-4 w-4 stroke-[3]" />}{item}</button>;
+  const proceed = () => { if (step < 3) setStep(step + 1); else { setProfile({ gender, selectedCharacter, currentProblems, idealGoals }); onComplete(); } };
+  const title = ['あなたのことを教えてください', '相棒を選びましょう', '今の悩みは何ですか？', 'どんな自分になりたい？'][step];
+  return <div className="min-h-[100dvh] bg-[#10182b] px-4 py-5 text-slate-100 sm:py-10"><main className="mx-auto w-full max-w-3xl"><header className="mb-7 flex items-center gap-4">{step ? <button onClick={() => setStep(step - 1)} className="rounded-xl p-2 text-slate-300 hover:bg-white/10" aria-label="前の画面へ戻る"><ArrowLeft className="h-5 w-5" /></button> : <div className="w-9" />}<div className="flex-1"><div className="flex gap-2">{[0, 1, 2, 3].map((value) => <span key={value} className={`h-1.5 flex-1 rounded-full ${value <= step ? 'bg-amber-300' : 'bg-white/15'}`} />)}</div><p className="mt-2 text-center text-xs font-black tracking-[.16em] text-amber-200">STEP {step + 1} / 4</p></div><div className="w-9" /></header><section className="rounded-[2rem] border border-white/10 bg-slate-900/65 p-5 shadow-2xl sm:p-8"><p className="text-xs font-black uppercase tracking-[.2em] text-amber-300">Your growth quest</p><h1 className="mt-2 text-2xl font-black sm:text-3xl">{title}</h1><p className="mt-2 text-sm font-bold text-slate-400">小さな一歩から、あなたの冒険を始めましょう。</p>{step === 0 && <div className="mt-7 grid grid-cols-2 gap-3 sm:gap-5">{[['male', '男性', genderMale], ['female', '女性', genderFemale]].map(([id, name, image]) => <button key={id} onClick={() => { setGender(id); setSelectedCharacter(''); }} className={`overflow-hidden rounded-3xl border-2 p-3 transition ${gender === id ? 'border-amber-300 bg-amber-300/10' : 'border-white/10 bg-slate-800/70'}`}><img src={image} alt={`${name}キャラクター`} className="mx-auto h-44 w-full object-contain sm:h-56" /><span className="mt-2 block text-base font-black">{name}</span></button>)}</div>}{step === 1 && <div className="mt-7 grid grid-cols-3 gap-2 sm:gap-4">{characters[gender].map(([id, name, image]) => <button key={id} onClick={() => setSelectedCharacter(id)} className={`overflow-hidden rounded-2xl border-2 p-2 transition ${selectedCharacter === id ? 'border-amber-300 bg-amber-300/10 scale-[1.02]' : 'border-white/10 bg-slate-800/70'}`}><img src={image} alt={name} className="mx-auto h-40 w-full object-contain sm:h-56" /><span className="mt-2 block text-xs font-black sm:text-sm">{name}</span></button>)}</div>}{step === 2 && <div className="mt-7 flex flex-wrap gap-2">{problems.map((item) => chip(item, currentProblems.includes(item), () => setCurrentProblems(toggle(currentProblems, item))))}</div>}{step === 3 && <div className="mt-7 space-y-5">{groups.map(([name, goals]) => <section key={name}><h2 className="text-base font-black">{name}</h2><div className="mt-2 flex flex-wrap gap-2">{goals.map((item) => chip(item, idealGoals.includes(item), () => setIdealGoals(toggle(idealGoals, item))))}</div></section>)}</div>}<button disabled={!ready} onClick={proceed} className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-300 py-4 font-black text-slate-950 transition enabled:hover:bg-amber-200 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-500">{step === 3 ? <><Sparkles className="h-5 w-5" />始める</> : <>次へ<ChevronRight className="h-5 w-5" /></>}</button></section></main></div>;
+};

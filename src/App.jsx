@@ -14,8 +14,13 @@ import {
 } from 'lucide-react';
 import { FinanceProvider, getGoalTaskPlan, useFinance } from './context/FinanceContext';
 import { TransactionForm } from './components/TransactionForm';
+import { Onboarding } from './components/Onboarding';
+import { PlayerStatusPanel } from './components/home/PlayerStatusPanel';
 import { playCompletionSound } from './utils/playCompletionSound';
 import { createGoalBgm } from './utils/createGoalBgm';
+import { getCompletedTaskIds } from './domain/tasks/taskPlan';
+import companionRoom from './assets/rooms/companion-room.png';
+import companionCharacter from './assets/characters/ChatGPT Image 2026年8月15日 10_43_54 (1).png';
 
 const getDayNumber = (startedOn) => {
   const start = new Date(`${startedOn || new Date().toISOString().slice(0, 10)}T00:00:00`);
@@ -25,29 +30,27 @@ const getDayNumber = (startedOn) => {
 };
 
 const Companion = ({ isComplete, progress }) => (
-  <div className="relative mx-auto flex h-40 w-44 items-end justify-center" aria-label={isComplete ? '今日のクエストを達成したキャラクター' : '応援するキャラクター'}>
-    <span className="companion-spark companion-spark-one">✦</span>
-    <span className="companion-spark companion-spark-two">✦</span>
-    <span className="companion-spark companion-spark-three">✦</span>
-    <div className={`companion ${isComplete ? 'companion-celebrate' : ''}`}>
-      <div className="companion-hair" />
-      <div className="companion-head"><i /><i /></div>
-      <div className="companion-body"><span className="companion-heart">♥</span></div>
-      <div className="companion-arm companion-arm-left" />
-      <div className="companion-arm companion-arm-right" />
-      <div className="companion-leg companion-leg-left" />
-      <div className="companion-leg companion-leg-right" />
-    </div>
-    <div className="absolute bottom-1 h-3 w-32 rounded-[100%] bg-slate-950/40 blur-sm" />
-    <span className="absolute bottom-0 rounded-full border border-white/10 bg-slate-950/65 px-3 py-1 text-[10px] font-black tracking-[0.18em] text-amber-200">
+  <div
+    className="relative mx-auto mt-3 aspect-square w-full max-w-[330px] overflow-hidden"
+    aria-label={isComplete ? '今日のクエストを達成したキャラクターの部屋' : 'キャラクターの部屋'}
+  >
+    <img src={companionRoom} alt="キャラクターの部屋" className="absolute inset-0 h-full w-full object-cover" />
+    <img
+      src={companionCharacter}
+      alt="部屋にいるキャラクター"
+      className={`absolute bottom-[19%] left-[47%] z-10 w-[24%] -translate-x-1/2 mix-blend-multiply transition-transform duration-700 ${isComplete ? 'scale-110' : 'animate-[pulse_3s_ease-in-out_infinite]'}`}
+    />
+    <div className="absolute bottom-[19%] left-[47%] h-[3%] w-[18%] -translate-x-1/2 rounded-[100%] bg-slate-950/35 blur-sm" />
+    <span className="absolute bottom-3 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full border border-white/15 bg-slate-950/70 px-3 py-1 text-[10px] font-black tracking-[0.18em] text-amber-200 backdrop-blur-sm">
       {isComplete ? 'QUEST CLEAR!' : `ENERGY ${progress}%`}
     </span>
   </div>
 );
 
-const Home = () => {
+const Home = ({ openGoalSelector }) => {
   const { activeGoal, completeTask } = useFinance();
   const [isMemoOpen, setIsMemoOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
   const [memo, setMemo] = useState('');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isBgmPlaying, setIsBgmPlaying] = useState(false);
@@ -59,26 +62,27 @@ const Home = () => {
   const plan = activeGoal ? getGoalTaskPlan(activeGoal) ?? [] : [];
   const currentDay = plan[dayNumber - 1];
   const tasks = currentDay?.tasks ?? [];
-  const taskIndex = activeGoal?.taskDay === dayNumber ? Math.min(activeGoal.taskIndex, tasks.length) : 0;
-  const currentTask = tasks[taskIndex];
-  const completedToday = taskIndex;
+  const completedTaskIds = getCompletedTaskIds(activeGoal, plan);
+  const completedToday = tasks.filter((task) => completedTaskIds.has(task.id)).length;
   const remainingToday = Math.max(tasks.length - completedToday, 0);
   const todayProgress = tasks.length ? Math.round((completedToday / tasks.length) * 100) : 0;
   const allTasks = plan.flatMap((day) => day.tasks);
-  const completedCount = activeGoal?.completedTasks?.length ?? 0;
+  const completedCount = completedTaskIds.size;
   const totalProgress = allTasks.length ? Math.min(Math.round((completedCount / allTasks.length) * 100), 100) : 0;
   const isTodayComplete = tasks.length > 0 && remainingToday === 0;
 
-  const openMemo = () => {
+  const openMemo = (task) => {
     playCompletionSound();
     setMemo('');
+    setSelectedTask(task);
     setIsMemoOpen(true);
   };
 
   const saveCompletion = () => {
-    if (!currentTask) return;
-    completeTask(dayNumber, tasks.length, currentTask, memo);
+    if (!selectedTask) return;
+    completeTask(selectedTask.id, memo);
     setIsMemoOpen(false);
+    setSelectedTask(null);
   };
 
   const toggleBgm = async () => {
@@ -116,6 +120,8 @@ const Home = () => {
           </div>
         </header>
 
+        <PlayerStatusPanel />
+
         {activeGoal ? (
           <>
             <section className="rounded-[1.75rem] border border-amber-300/20 bg-gradient-to-br from-amber-300/15 via-orange-400/5 to-slate-900 p-4 shadow-xl shadow-slate-950/30">
@@ -129,7 +135,7 @@ const Home = () => {
               </div>
             </section>
 
-            <section className="relative mt-4 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-[#263c65] to-[#172640] px-5 pb-5 pt-4 shadow-2xl shadow-slate-950/30">
+            <section className="relative mt-4 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-[#263c65] to-[#172640] px-5 pb-5 pt-4 shadow-2xl shadow-slate-950/30" aria-label="キャラクターの部屋">
               <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-amber-300/10 blur-3xl" />
               <div className="relative flex items-start justify-between">
                 <div>
@@ -165,17 +171,17 @@ const Home = () => {
 
               <div className="mt-3 space-y-3">
                 {tasks.map((task, index) => {
-                  const isDone = index < completedToday;
-                  const isCurrent = index === completedToday && !isTodayComplete;
+                  const isDone = completedTaskIds.has(task.id);
+                  const isCurrent = !isDone;
                   return (
-                    <article key={`${task}-${index}`} className={`rounded-3xl border p-4 transition ${isDone ? 'border-emerald-400/20 bg-emerald-400/10' : isCurrent ? 'border-amber-300/50 bg-slate-800 shadow-lg shadow-amber-950/20' : 'border-white/5 bg-slate-900/60 opacity-65'}`}>
+                    <article key={task.id} className={`rounded-3xl border p-4 transition ${isDone ? 'border-emerald-400/20 bg-emerald-400/10' : 'border-amber-300/50 bg-slate-800 shadow-lg shadow-amber-950/20'}`}>
                       <div className="flex items-center gap-4">
-                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-sm font-black ${isDone ? 'bg-emerald-400 text-slate-950' : isCurrent ? 'bg-amber-300 text-slate-950' : 'bg-slate-700 text-slate-300'}`}>
+                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-sm font-black ${isDone ? 'bg-emerald-400 text-slate-950' : 'bg-amber-300 text-slate-950'}`}>
                           {isDone ? <Check className="h-5 w-5 stroke-[3]" /> : String(index + 1).padStart(2, '0')}
                         </span>
-                        <p className={`flex-1 text-[15px] font-bold leading-relaxed ${isDone ? 'text-emerald-100 line-through decoration-emerald-400/60' : 'text-slate-50'}`}>{task}</p>
+                        <p className={`flex-1 text-[15px] font-bold leading-relaxed ${isDone ? 'text-emerald-100 line-through decoration-emerald-400/60' : 'text-slate-50'}`}>{task.title}</p>
                         {isCurrent ? (
-                          <button onClick={openMemo} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-300 text-slate-950 shadow-lg shadow-amber-400/15 transition hover:scale-105 hover:bg-amber-200" aria-label={`「${task}」を完了する`} title="完了する">
+                          <button onClick={() => openMemo(task)} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-300 text-slate-950 shadow-lg shadow-amber-400/15 transition hover:scale-105 hover:bg-amber-200" aria-label={`Complete ${task.title}`} title="Complete">
                             <Check className="h-6 w-6 stroke-[3]" />
                           </button>
                         ) : !isDone && <LockKeyhole className="h-4 w-4 shrink-0 text-slate-500" />}
@@ -215,15 +221,15 @@ const Home = () => {
         )}
       </main>
 
-      <TransactionForm />
-      {isMemoOpen && currentTask && (
+      <TransactionForm openOnMount={openGoalSelector} />
+      {isMemoOpen && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center">
           <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-900 p-5 shadow-2xl">
             <div className="flex items-center justify-between">
               <div><p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">Quest complete</p><h2 className="mt-1 text-xl font-black">完了を記録する</h2></div>
               <button onClick={() => setIsMemoOpen(false)} className="rounded-xl p-2 text-slate-400 hover:bg-slate-800 hover:text-white" aria-label="閉じる"><X className="h-5 w-5" /></button>
             </div>
-            <div className="mt-5 rounded-2xl bg-amber-300/10 p-4 text-sm font-bold leading-relaxed text-amber-50"><Check className="mr-2 inline h-5 w-5 text-amber-300" />{currentTask}</div>
+            <div className="mt-5 rounded-2xl bg-amber-300/10 p-4 text-sm font-bold leading-relaxed text-amber-50"><Check className="mr-2 inline h-5 w-5 text-amber-300" />{selectedTask.title}</div>
             <label className="mt-5 block text-sm font-bold" htmlFor="completion-memo">ひとことメモ（任意）</label>
             <textarea id="completion-memo" value={memo} onChange={(event) => setMemo(event.target.value)} placeholder="できたこと・気づいたことを残せます" className="mt-2 min-h-28 w-full resize-none rounded-2xl border border-slate-700 bg-slate-800 p-3 text-sm leading-relaxed text-white outline-none placeholder:text-slate-500 focus:border-amber-300" autoFocus />
             <button onClick={saveCompletion} className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-300 py-3.5 font-black text-slate-950 transition hover:bg-amber-200"><Sparkles className="h-5 w-5" />完了して次のクエストへ<ChevronRight className="h-5 w-5" /></button>
@@ -236,5 +242,12 @@ const Home = () => {
 };
 
 export default function App() {
-  return <FinanceProvider><Home /></FinanceProvider>;
+  return <FinanceProvider><AppContent /></FinanceProvider>;
+}
+
+function AppContent() {
+  const { profile } = useFinance();
+  const [completedNow, setCompletedNow] = useState(false);
+  if (!profile && !completedNow) return <Onboarding onComplete={() => setCompletedNow(true)} />;
+  return <Home openGoalSelector={completedNow} />;
 }

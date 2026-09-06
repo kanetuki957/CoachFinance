@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { completeTaskInGoal, normalizeTaskPlan } from '../domain/tasks/taskPlan';
 
 const GoalContext = createContext(null);
 const STORAGE_KEY = 'coach_goal_data_v1';
@@ -263,12 +264,19 @@ const LEGACY_TASK_PLANS = {
   life: WAKE_UP_FIXED_TIME_PLAN,
 };
 
-export const getGoalTaskPlan = (goal) =>
-  goal?.taskPlan ??
-  LEGACY_TASK_PLANS[goal?.categoryId] ??
-  null;
+export const getGoalTaskPlan = (goal) => {
+  const rawPlan = goal?.taskPlan ?? LEGACY_TASK_PLANS[goal?.categoryId] ?? [];
+  return normalizeTaskPlan(rawPlan);
+};
 
 export const FinanceProvider = ({ children }) => {
+  const [profile, setProfile] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY))?.profile ?? null;
+    } catch {
+      return null;
+    }
+  });
   const [activeGoal, setActiveGoal] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEY))?.activeGoal ?? null;
@@ -276,10 +284,15 @@ export const FinanceProvider = ({ children }) => {
       return null;
     }
   });
+  const activeGoalRef = useRef(activeGoal);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal }));
+    activeGoalRef.current = activeGoal;
   }, [activeGoal]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal, profile }));
+  }, [activeGoal, profile]);
 
   const selectGoal = (category, goal) => {
     setActiveGoal({
@@ -290,32 +303,25 @@ export const FinanceProvider = ({ children }) => {
       icon: category.icon,
       color: category.color,
       title: goal.title,
-      taskPlan: goal.taskPlan,
+      taskPlan: normalizeTaskPlan(goal.taskPlan),
       startedOn: getLocalDateKey(),
-      taskDay: 1,
-      taskIndex: 0,
       completedTasks: [],
     });
   };
 
-  const completeTask = (dayNumber, taskCount, task, note) => {
-    setActiveGoal((current) => {
-      if (!current) return current;
-      const currentIndex = current.taskDay === dayNumber ? current.taskIndex : 0;
-      return {
-        ...current,
-        taskDay: dayNumber,
-        taskIndex: Math.min(currentIndex + 1, taskCount),
-        completedTasks: [
-          ...(current.completedTasks ?? []),
-          { id: `${Date.now()}-${currentIndex}`, day: dayNumber, task, note: note.trim() },
-        ],
-      };
-    });
+  // Returns a domain event, allowing a later game system to react to completion
+  // without coupling stats, money, or room state to this provider.
+  const completeTask = (taskId, note = '') => {
+    const current = activeGoalRef.current;
+    const result = completeTaskInGoal(current, getGoalTaskPlan(current), taskId, note);
+    if (!result.event) return null;
+    activeGoalRef.current = result.goal;
+    setActiveGoal(result.goal);
+    return result.event;
   };
 
   return (
-    <GoalContext.Provider value={{ activeGoal, selectGoal, completeTask }}>
+    <GoalContext.Provider value={{ activeGoal, profile, setProfile, selectGoal, completeTask }}>
       {children}
     </GoalContext.Provider>
   );
