@@ -29,6 +29,8 @@ const getDayNumber = (startedOn) => {
   return Math.min(Math.max(Math.floor((today - start) / 86400000) + 1, 1), 7);
 };
 
+const STATUS_LABELS = { knowledge: '知力', wealth: '運', strength: '体力' };
+
 const Companion = ({ isComplete, progress }) => (
   <div
     className="relative mx-auto mt-3 aspect-square w-full max-w-[330px] overflow-hidden"
@@ -47,11 +49,25 @@ const Companion = ({ isComplete, progress }) => (
   </div>
 );
 
+const SelectedGoal = ({ goal }) => (
+  <section className="mt-4 rounded-[1.75rem] border border-amber-300/20 bg-gradient-to-br from-amber-300/15 via-orange-400/5 to-slate-900 p-4 shadow-xl shadow-slate-950/30">
+    <div className="flex items-center gap-2 text-xs font-bold text-amber-100">
+      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-300/15 text-base">{goal.icon}</span>
+      {goal.categoryName}
+    </div>
+    <div className="mt-3 flex gap-3">
+      <Target className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
+      <p className="text-base font-black leading-relaxed tracking-tight">{goal.title}</p>
+    </div>
+  </section>
+);
+
 const Home = ({ openGoalSelector }) => {
-  const { activeGoal, completeTask } = useFinance();
+  const { activeGoal, completeTask, game } = useFinance();
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [memo, setMemo] = useState('');
+  const [lastReward, setLastReward] = useState(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isBgmPlaying, setIsBgmPlaying] = useState(false);
   const bgmPlayer = useRef(null);
@@ -80,7 +96,10 @@ const Home = ({ openGoalSelector }) => {
 
   const saveCompletion = () => {
     if (!selectedTask) return;
-    completeTask(selectedTask.id, memo);
+    const completion = completeTask(selectedTask.id, memo);
+    if (completion?.reward) {
+      setLastReward(completion.reward);
+    }
     setIsMemoOpen(false);
     setSelectedTask(null);
   };
@@ -120,21 +139,10 @@ const Home = ({ openGoalSelector }) => {
           </div>
         </header>
 
-        <PlayerStatusPanel />
+        <PlayerStatusPanel game={game} />
 
         {activeGoal ? (
           <>
-            <section className="rounded-[1.75rem] border border-amber-300/20 bg-gradient-to-br from-amber-300/15 via-orange-400/5 to-slate-900 p-4 shadow-xl shadow-slate-950/30">
-              <div className="flex items-center gap-2 text-xs font-bold text-amber-100">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-300/15 text-base">{activeGoal.icon}</span>
-                {activeGoal.categoryName}
-              </div>
-              <div className="mt-3 flex gap-3">
-                <Target className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
-                <p className="text-base font-black leading-relaxed tracking-tight">{activeGoal.title}</p>
-              </div>
-            </section>
-
             <section className="relative mt-4 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-[#263c65] to-[#172640] px-5 pb-5 pt-4 shadow-2xl shadow-slate-950/30" aria-label="キャラクターの部屋">
               <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-amber-300/10 blur-3xl" />
               <div className="relative flex items-start justify-between">
@@ -157,6 +165,16 @@ const Home = ({ openGoalSelector }) => {
                 </div>
               </div>
             </section>
+
+            <SelectedGoal goal={activeGoal} />
+
+            {lastReward && (
+              <div className="mt-3 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-100" role="status">
+                <span>タスク完了！</span>
+                {lastReward.statusType && <span className="ml-2">{STATUS_LABELS[lastReward.statusType]} +{lastReward.statusReward}</span>}
+                <span className="ml-2 text-amber-200">¥{lastReward.moneyReward} GET</span>
+              </div>
+            )}
 
             <section className="mt-5">
               <div className="flex items-end justify-between">

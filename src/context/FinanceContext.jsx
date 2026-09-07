@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { completeTaskInGoal, normalizeTaskPlan } from '../domain/tasks/taskPlan';
+import { applyTaskCompletionReward, normalizeGameState } from '../domain/game/gameProgress';
 
 const GoalContext = createContext(null);
 const STORAGE_KEY = 'coach_goal_data_v1';
@@ -219,6 +220,9 @@ const SNS_FREE_1_HOUR_PLAN = createPlan([
 export const GOAL_CATEGORIES = [
   {
     id: 'exercise',
+    statusType: 'strength',
+    statusReward: 5,
+    moneyReward: 100,
     icon: '🏋️',
     name: '筋トレ・運動',
     color: 'emerald',
@@ -232,6 +236,9 @@ export const GOAL_CATEGORIES = [
   },
   {
     id: 'study',
+    statusType: 'knowledge',
+    statusReward: 5,
+    moneyReward: 100,
     icon: '📚',
     name: '勉強・資格',
     color: 'sky',
@@ -245,6 +252,9 @@ export const GOAL_CATEGORIES = [
   },
   {
     id: 'life',
+    statusType: 'wealth',
+    statusReward: 5,
+    moneyReward: 100,
     icon: '🌱',
     name: '生活・習慣',
     color: 'amber',
@@ -284,15 +294,27 @@ export const FinanceProvider = ({ children }) => {
       return null;
     }
   });
+  const [game, setGame] = useState(() => {
+    try {
+      return normalizeGameState(JSON.parse(localStorage.getItem(STORAGE_KEY))?.game);
+    } catch {
+      return normalizeGameState();
+    }
+  });
   const activeGoalRef = useRef(activeGoal);
+  const gameRef = useRef(game);
 
   useEffect(() => {
     activeGoalRef.current = activeGoal;
   }, [activeGoal]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal, profile }));
-  }, [activeGoal, profile]);
+    gameRef.current = game;
+  }, [game]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal, profile, game }));
+  }, [activeGoal, profile, game]);
 
   const selectGoal = (category, goal) => {
     setActiveGoal({
@@ -302,6 +324,9 @@ export const FinanceProvider = ({ children }) => {
       categoryName: category.name,
       icon: category.icon,
       color: category.color,
+      statusType: goal.statusType ?? category.statusType,
+      statusReward: goal.statusReward ?? category.statusReward ?? 5,
+      moneyReward: goal.moneyReward ?? category.moneyReward ?? 100,
       title: goal.title,
       taskPlan: normalizeTaskPlan(goal.taskPlan),
       startedOn: getLocalDateKey(),
@@ -315,13 +340,23 @@ export const FinanceProvider = ({ children }) => {
     const current = activeGoalRef.current;
     const result = completeTaskInGoal(current, getGoalTaskPlan(current), taskId, note);
     if (!result.event) return null;
-    activeGoalRef.current = result.goal;
-    setActiveGoal(result.goal);
-    return result.event;
+    const category = GOAL_CATEGORIES.find((item) => item.id === result.goal.categoryId);
+    const goalWithGameConfig = {
+      ...result.goal,
+      statusType: result.goal.statusType ?? category?.statusType,
+      statusReward: result.goal.statusReward ?? category?.statusReward ?? 5,
+      moneyReward: result.goal.moneyReward ?? category?.moneyReward ?? 100,
+    };
+    const rewardResult = applyTaskCompletionReward(gameRef.current, goalWithGameConfig);
+    activeGoalRef.current = goalWithGameConfig;
+    gameRef.current = rewardResult.game;
+    setActiveGoal(goalWithGameConfig);
+    setGame(rewardResult.game);
+    return { ...result.event, reward: rewardResult.reward };
   };
 
   return (
-    <GoalContext.Provider value={{ activeGoal, profile, setProfile, selectGoal, completeTask }}>
+    <GoalContext.Provider value={{ activeGoal, game, profile, setProfile, selectGoal, completeTask }}>
       {children}
     </GoalContext.Provider>
   );
