@@ -5,6 +5,8 @@ export const DEFAULT_GAME_STATE = Object.freeze({
   wealth: 0,
   strength: 0,
   money: 0,
+  ownedFurniture: [],
+  placedFurniture: [],
 });
 
 export const normalizeGameState = (game) => ({
@@ -12,6 +14,7 @@ export const normalizeGameState = (game) => ({
   wealth: Math.min(Math.max(Number(game?.wealth) || 0, 0), STATUS_MAX),
   strength: Math.min(Math.max(Number(game?.strength) || 0, 0), STATUS_MAX),
   money: Math.max(Number(game?.money) || 0, 0),
+  ...normalizeFurnitureState(game),
 });
 
 /**
@@ -35,3 +38,4 @@ export const applyTaskCompletionReward = (game, goal) => {
     reward: { statusType, statusReward, moneyReward },
   };
 };
+import { normalizeFurnitureState } from '../furniture/furnitureInventory.js';

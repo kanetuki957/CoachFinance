@@ -6,6 +6,7 @@ import {
   ChevronRight,
   LockKeyhole,
   Sparkles,
+  Store,
   Target,
   Trophy,
   Volume2,
@@ -16,9 +17,11 @@ import { FinanceProvider, getGoalTaskPlan, useFinance } from './context/FinanceC
 import { TransactionForm } from './components/TransactionForm';
 import { Onboarding } from './components/Onboarding';
 import { PlayerStatusPanel } from './components/home/PlayerStatusPanel';
+import { Shop } from './components/Shop';
 import { playCompletionSound } from './utils/playCompletionSound';
 import { createGoalBgm } from './utils/createGoalBgm';
 import { getCompletedTaskIds } from './domain/tasks/taskPlan';
+import { FURNITURE_PLACEMENTS, getFurnitureById } from './domain/furniture/furnitureCatalog';
 import companionRoom from './assets/rooms/companion-room.png';
 import companionCharacter from './assets/characters/ChatGPT Image 2026年8月15日 10_43_54 (1).png';
 
@@ -31,12 +34,17 @@ const getDayNumber = (startedOn) => {
 
 const STATUS_LABELS = { knowledge: '知力', wealth: '運', strength: '体力' };
 
-const Companion = ({ isComplete, progress }) => (
+const Companion = ({ isComplete, progress, placedFurniture = [] }) => (
   <div
     className="relative mx-auto mt-3 aspect-square w-full max-w-[330px] overflow-hidden"
     aria-label={isComplete ? '今日のクエストを達成したキャラクターの部屋' : 'キャラクターの部屋'}
   >
     <img src={companionRoom} alt="キャラクターの部屋" className="absolute inset-0 h-full w-full object-cover" />
+    {placedFurniture.map((furnitureId) => {
+      const furniture = getFurnitureById(furnitureId);
+      if (!furniture) return null;
+      return <span key={furnitureId} className="absolute z-[5] -translate-x-1/2 select-none drop-shadow-lg" style={{ ...FURNITURE_PLACEMENTS[furnitureId], fontSize: `${Math.max(28, furniture.height * 0.55)}px` }} aria-label={furniture.name}>{furniture.image}</span>;
+    })}
     <img
       src={companionCharacter}
       alt="部屋にいるキャラクター"
@@ -62,7 +70,7 @@ const SelectedGoal = ({ goal }) => (
   </section>
 );
 
-const Home = ({ openGoalSelector }) => {
+const Home = ({ openGoalSelector, onOpenShop }) => {
   const { activeGoal, completeTask, game } = useFinance();
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -153,7 +161,7 @@ const Home = ({ openGoalSelector }) => {
                 <Sparkles className="h-5 w-5 text-amber-300" />
               </div>
 
-              <Companion isComplete={isTodayComplete} progress={todayProgress} />
+              <Companion isComplete={isTodayComplete} progress={todayProgress} placedFurniture={game.placedFurniture} />
 
               <div className="relative mt-2">
                 <div className="flex items-center justify-between text-xs font-bold text-blue-100">
@@ -240,6 +248,7 @@ const Home = ({ openGoalSelector }) => {
       </main>
 
       <TransactionForm openOnMount={openGoalSelector} />
+      <button onClick={onOpenShop} className="fixed bottom-6 left-6 z-40 flex items-center gap-2 rounded-full bg-amber-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/40 transition hover:scale-105 hover:bg-amber-200" aria-label="ショップを開く"><Store className="h-5 w-5" />SHOP</button>
       {isMemoOpen && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center">
           <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-900 p-5 shadow-2xl">
@@ -266,6 +275,8 @@ export default function App() {
 function AppContent() {
   const { profile } = useFinance();
   const [completedNow, setCompletedNow] = useState(false);
+  const [screen, setScreen] = useState('home');
   if (!profile && !completedNow) return <Onboarding onComplete={() => setCompletedNow(true)} />;
-  return <Home openGoalSelector={completedNow} />;
+  if (screen === 'shop') return <Shop onBack={() => setScreen('home')} />;
+  return <Home openGoalSelector={completedNow} onOpenShop={() => setScreen('shop')} />;
 }
