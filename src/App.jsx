@@ -18,10 +18,10 @@ import { TransactionForm } from './components/TransactionForm';
 import { Onboarding } from './components/Onboarding';
 import { PlayerStatusPanel } from './components/home/PlayerStatusPanel';
 import { Shop } from './components/Shop';
+import { RoomFurniture } from './components/room/RoomFurniture';
 import { playCompletionSound } from './utils/playCompletionSound';
 import { createGoalBgm } from './utils/createGoalBgm';
 import { getCompletedTaskIds } from './domain/tasks/taskPlan';
-import { FURNITURE_PLACEMENTS, getFurnitureById } from './domain/furniture/furnitureCatalog';
 import companionRoom from './assets/rooms/companion-room.png';
 import companionCharacter from './assets/characters/ChatGPT Image 2026年8月15日 10_43_54 (1).png';
 
@@ -34,17 +34,16 @@ const getDayNumber = (startedOn) => {
 
 const STATUS_LABELS = { knowledge: '知力', wealth: '運', strength: '体力' };
 
-const Companion = ({ isComplete, progress, placedFurniture = [] }) => (
+const Companion = ({ isComplete, progress, placedFurniture = [], onMoveFurniture, onRemoveFurniture }) => {
+  const roomRef = useRef(null);
+  return (
   <div
+    ref={roomRef}
     className="relative mx-auto mt-3 aspect-square w-full max-w-[330px] overflow-hidden"
     aria-label={isComplete ? '今日のクエストを達成したキャラクターの部屋' : 'キャラクターの部屋'}
   >
     <img src={companionRoom} alt="キャラクターの部屋" className="absolute inset-0 h-full w-full object-cover" />
-    {placedFurniture.map((furnitureId) => {
-      const furniture = getFurnitureById(furnitureId);
-      if (!furniture) return null;
-      return <span key={furnitureId} className="absolute z-[5] -translate-x-1/2 select-none drop-shadow-lg" style={{ ...FURNITURE_PLACEMENTS[furnitureId], fontSize: `${Math.max(28, furniture.height * 0.55)}px` }} aria-label={furniture.name}>{furniture.image}</span>;
-    })}
+    <RoomFurniture roomRef={roomRef} items={placedFurniture} onMove={onMoveFurniture} onRemove={onRemoveFurniture} />
     <img
       src={companionCharacter}
       alt="部屋にいるキャラクター"
@@ -55,7 +54,8 @@ const Companion = ({ isComplete, progress, placedFurniture = [] }) => (
       {isComplete ? 'QUEST CLEAR!' : `ENERGY ${progress}%`}
     </span>
   </div>
-);
+  );
+};
 
 const SelectedGoal = ({ goal }) => (
   <section className="mt-4 rounded-[1.75rem] border border-amber-300/20 bg-gradient-to-br from-amber-300/15 via-orange-400/5 to-slate-900 p-4 shadow-xl shadow-slate-950/30">
@@ -71,7 +71,7 @@ const SelectedGoal = ({ goal }) => (
 );
 
 const Home = ({ openGoalSelector, onOpenShop }) => {
-  const { activeGoal, completeTask, game } = useFinance();
+  const { activeGoal, completeTask, game, movePlacedFurniture, removePlacedFurniture } = useFinance();
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [memo, setMemo] = useState('');
@@ -161,7 +161,7 @@ const Home = ({ openGoalSelector, onOpenShop }) => {
                 <Sparkles className="h-5 w-5 text-amber-300" />
               </div>
 
-              <Companion isComplete={isTodayComplete} progress={todayProgress} placedFurniture={game.placedFurniture} />
+              <Companion isComplete={isTodayComplete} progress={todayProgress} placedFurniture={game.placedFurniture} onMoveFurniture={movePlacedFurniture} onRemoveFurniture={removePlacedFurniture} />
 
               <div className="relative mt-2">
                 <div className="flex items-center justify-between text-xs font-bold text-blue-100">

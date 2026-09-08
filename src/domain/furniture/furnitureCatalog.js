@@ -12,10 +12,10 @@ export const getFurnitureById = (furnitureId) =>
   FURNITURE_CATALOG.find((furniture) => furniture.id === furnitureId) ?? null;
 
 // Relative coordinates make placements responsive to the room card size.
-export const FURNITURE_PLACEMENTS = {
-  plant_01: { left: '78%', bottom: '15%' },
-  chair_01: { left: '27%', bottom: '18%' },
-  desk_01: { left: '22%', bottom: '18%' },
-  sofa_01: { left: '50%', bottom: '14%' },
-  tv_01: { left: '73%', bottom: '28%' },
+export const FURNITURE_DEFAULT_POSITIONS = {
+  plant_01: { x: 250, y: 210 },
+  chair_01: { x: 72, y: 208 },
+  desk_01: { x: 42, y: 205 },
+  sofa_01: { x: 100, y: 235 },
+  tv_01: { x: 210, y: 110 },
 };

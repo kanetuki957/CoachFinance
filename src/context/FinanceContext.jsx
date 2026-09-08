@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { completeTaskInGoal, normalizeTaskPlan } from '../domain/tasks/taskPlan';
 import { applyTaskCompletionReward, normalizeGameState } from '../domain/game/gameProgress';
-import { placeFurniture, purchaseFurniture, removeFurniture } from '../domain/furniture/furnitureInventory';
+import { placeFurniture, purchaseFurniture, removeFurniture, updateFurniturePosition } from '../domain/furniture/furnitureInventory';
 
 const GoalContext = createContext(null);
 const STORAGE_KEY = 'coach_goal_data_v1';
@@ -371,17 +371,23 @@ export const FinanceProvider = ({ children }) => {
   const placeOwnedFurniture = (furnitureId) => {
     const placement = placeFurniture(gameRef.current, furnitureId);
     if (placement.ok) commitGame(placement.game);
-    return placement.ok;
+    return placement;
   };
 
-  const removePlacedFurniture = (furnitureId) => {
-    const removal = removeFurniture(gameRef.current, furnitureId);
+  const movePlacedFurniture = (instanceId, x, y) => {
+    const movement = updateFurniturePosition(gameRef.current, instanceId, x, y);
+    if (movement.ok) commitGame(movement.game);
+    return movement.ok;
+  };
+
+  const removePlacedFurniture = (instanceId) => {
+    const removal = removeFurniture(gameRef.current, instanceId);
     if (removal.ok) commitGame(removal.game);
     return removal.ok;
   };
 
   return (
-    <GoalContext.Provider value={{ activeGoal, game, profile, setProfile, selectGoal, completeTask, buyFurniture, placeOwnedFurniture, removePlacedFurniture }}>
+    <GoalContext.Provider value={{ activeGoal, game, profile, setProfile, selectGoal, completeTask, buyFurniture, placeOwnedFurniture, movePlacedFurniture, removePlacedFurniture }}>
       {children}
     </GoalContext.Provider>
   );
