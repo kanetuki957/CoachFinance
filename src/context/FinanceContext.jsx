@@ -356,30 +356,35 @@ export const FinanceProvider = ({ children }) => {
     return { ...result.event, reward: rewardResult.reward };
   };
 
+  // ドメイン処理で作ったゲーム状態を正規化し、Ref と React state の両方へ反映する共通処理。
   const commitGame = (nextGame) => {
     const normalized = normalizeGameState(nextGame);
     gameRef.current = normalized;
     setGame(normalized);
   };
 
+  // ショップから呼ばれる購入窓口。購入成功時だけ状態を保存対象へ反映する。
   const buyFurniture = (furnitureId) => {
     const purchase = purchaseFurniture(gameRef.current, furnitureId);
     if (purchase.result.ok) commitGame(purchase.game);
     return purchase.result;
   };
 
+  // 所持家具を部屋へ配置する窓口。
   const placeOwnedFurniture = (furnitureId) => {
     const placement = placeFurniture(gameRef.current, furnitureId);
     if (placement.ok) commitGame(placement.game);
     return placement;
   };
 
+  // 部屋でドラッグされた家具の位置を保存する窓口。
   const movePlacedFurniture = (instanceId, x, y) => {
     const movement = updateFurniturePosition(gameRef.current, instanceId, x, y);
     if (movement.ok) commitGame(movement.game);
     return movement.ok;
   };
 
+  // 部屋から家具を片付ける窓口。家具そのものは所持したままにする。
   const removePlacedFurniture = (instanceId) => {
     const removal = removeFurniture(gameRef.current, instanceId);
     if (removal.ok) commitGame(removal.game);
