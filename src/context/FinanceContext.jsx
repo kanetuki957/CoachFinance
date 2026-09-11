@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { completeTaskInGoal, normalizeTaskPlan } from '../domain/tasks/taskPlan';
 import { applyTaskCompletionReward, normalizeGameState } from '../domain/game/gameProgress';
 import { placeFurniture, purchaseFurniture, removeFurniture, updateFurniturePosition } from '../domain/furniture/furnitureInventory';
+import { purchaseProduct } from '../domain/shop/productInventory';
 
 const GoalContext = createContext(null);
 const STORAGE_KEY = 'coach_goal_data_v1';
@@ -370,6 +371,13 @@ export const FinanceProvider = ({ children }) => {
     return purchase.result;
   };
 
+  // ショップの全カテゴリから利用する購入窓口。商品種別ごとの在庫処理はドメイン層へ委譲する。
+  const buyProduct = (productId) => {
+    const purchase = purchaseProduct(gameRef.current, productId);
+    if (purchase.result.ok) commitGame(purchase.game);
+    return purchase.result;
+  };
+
   // 所持家具を部屋へ配置する窓口。
   const placeOwnedFurniture = (furnitureId) => {
     const placement = placeFurniture(gameRef.current, furnitureId);
@@ -392,7 +400,7 @@ export const FinanceProvider = ({ children }) => {
   };
 
   return (
-    <GoalContext.Provider value={{ activeGoal, game, profile, setProfile, selectGoal, completeTask, buyFurniture, placeOwnedFurniture, movePlacedFurniture, removePlacedFurniture }}>
+    <GoalContext.Provider value={{ activeGoal, game, profile, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, placeOwnedFurniture, movePlacedFurniture, removePlacedFurniture }}>
       {children}
     </GoalContext.Provider>
   );

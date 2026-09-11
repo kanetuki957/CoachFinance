@@ -1,13 +1,12 @@
 import { FURNITURE_DEFAULT_POSITIONS, getFurnitureById } from './furnitureCatalog.js';
-
-// 家具の位置・大きさを計算するための、画面サイズに依存しない部屋の基準座標。
+//家具の位置・大きさを計算するための、画面サイズに依存しない部屋の基準座標。
 const ROOM_WIDTH = 320;
 const ROOM_HEIGHT = 320;
 
 // 同じ家具を複数置けるよう、配置する1個ごとに一意の ID を発行する。
 const createInstanceId = (furnitureId) => `${furnitureId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-
 // 家具が部屋の外にはみ出さないよう、座標を部屋の範囲内に収める。
+
 const clampPosition = (furniture, x, y) => ({
   x: Math.min(Math.max(Math.round(Number(x) || 0), 0), ROOM_WIDTH - furniture.width),
   y: Math.min(Math.max(Math.round(Number(y) || 0), 0), ROOM_HEIGHT - furniture.height),
@@ -15,6 +14,7 @@ const clampPosition = (furniture, x, y) => ({
 
 // 保存済みデータを現在の形式へ整形する。
 // 旧形式（家具IDだけの配列）にも対応し、未定義の家具や所持数を超える配置を除外する。
+
 export const normalizeFurnitureState = (game) => {
   const quantities = new Map();
   (game?.ownedFurniture ?? []).forEach((item) => {
@@ -38,12 +38,11 @@ export const normalizeFurnitureState = (game) => {
   });
   return { ownedFurniture, placedFurniture };
 };
-
 // 指定した家具の所持数を返す。
 export const getOwnedFurnitureQuantity = (ownedFurniture, furnitureId) =>
   ownedFurniture.find((item) => item.furnitureId === furnitureId)?.quantity ?? 0;
-
 // 所持金を消費して家具を購入し、更新後のゲーム状態と購入結果を返す。
+
 export const purchaseFurniture = (game, furnitureId) => {
   const furniture = getFurnitureById(furnitureId);
   const state = normalizeFurnitureState(game);
@@ -53,8 +52,8 @@ export const purchaseFurniture = (game, furnitureId) => {
   const ownedFurniture = quantity ? state.ownedFurniture.map((item) => item.furnitureId === furnitureId ? { ...item, quantity: item.quantity + 1 } : item) : [...state.ownedFurniture, { furnitureId, quantity: 1 }];
   return { game: { ...game, ...state, money: game.money - furniture.price, ownedFurniture }, result: { ok: true, furniture } };
 };
-
 // 所持していて、まだ部屋に置いていない家具を初期位置に配置する。
+
 export const placeFurniture = (game, furnitureId) => {
   const state = normalizeFurnitureState(game);
   const furniture = getFurnitureById(furnitureId);
@@ -67,20 +66,20 @@ export const placeFurniture = (game, furnitureId) => {
     ok: true,
   };
 };
-
 // ドラッグ操作で指定した配置済み家具の座標を更新する。
+
 export const updateFurniturePosition = (game, instanceId, x, y) => {
   const state = normalizeFurnitureState(game);
   const placedFurniture = state.placedFurniture.map((item) => item.instanceId !== instanceId ? item : { ...item, ...clampPosition(getFurnitureById(item.furnitureId), x, y) });
   return { game: { ...game, ...state, placedFurniture }, ok: state.placedFurniture.some((item) => item.instanceId === instanceId) };
 };
-
 // 家具を部屋から片付ける。所持データは残すため、再配置できる。
+
 export const removeFurniture = (game, instanceId) => {
   const state = normalizeFurnitureState(game);
   const placedFurniture = state.placedFurniture.filter((item) => item.instanceId !== instanceId);
   return { game: { ...game, ...state, placedFurniture }, ok: placedFurniture.length !== state.placedFurniture.length };
 };
-
 // RoomFurniture コンポーネントが座標を表示用の割合へ変換する際に使う基準サイズ。
+
 export const ROOM_SIZE = { width: ROOM_WIDTH, height: ROOM_HEIGHT };

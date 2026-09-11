@@ -7,6 +7,7 @@ export const DEFAULT_GAME_STATE = Object.freeze({
   money: 0,
   ownedFurniture: [],
   placedFurniture: [],
+  ownedProducts: [],
 });
 
 export const normalizeGameState = (game) => ({
@@ -15,6 +16,8 @@ export const normalizeGameState = (game) => ({
   strength: Math.min(Math.max(Number(game?.strength) || 0, 0), STATUS_MAX),
   money: Math.max(Number(game?.money) || 0, 0),
   ...normalizeFurnitureState(game),
+  // 既存の ownedFurniture を読み込み時に ownedProducts へも反映して互換性を保つ。
+  ...normalizeProductInventory(game),
 });
 
 /**
@@ -39,3 +42,4 @@ export const applyTaskCompletionReward = (game, goal) => {
   };
 };
 import { normalizeFurnitureState } from '../furniture/furnitureInventory.js';
+import { normalizeProductInventory } from '../shop/productInventory.js';

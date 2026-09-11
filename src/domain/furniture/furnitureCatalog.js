@@ -1,12 +1,7 @@
-// 家具の種類・価格・表示用アイコン・部屋内サイズをまとめたマスターデータ。
-// image は現在絵文字の仮画像。画像 URL に差し替えても、ショップや部屋の処理は変更不要。
-export const FURNITURE_CATALOG = [
-  { id: 'plant_01', name: '観葉植物', category: 'plant', price: 300, image: '🪴', width: 52, height: 72 },
-  { id: 'chair_01', name: '木製チェア', category: 'chair', price: 500, image: '🪑', width: 58, height: 68 },
-  { id: 'desk_01', name: 'シンプルデスク', category: 'desk', price: 800, image: '🪵', width: 112, height: 68 },
-  { id: 'sofa_01', name: 'シンプルソファ', category: 'sofa', price: 1200, image: '🛋️', width: 120, height: 70 },
-  { id: 'tv_01', name: 'テレビ', category: 'tv', price: 2000, image: '📺', width: 96, height: 70 },
-];
+import { PRODUCT_CATALOG } from '../shop/productCatalog.js';
+
+// 既存の部屋・家具ロジック向けに、商品マスターから配置可能な item だけを公開する。
+export const FURNITURE_CATALOG = PRODUCT_CATALOG.filter((product) => product.category === 'item');
 
 // ID から家具マスターを取得する。見つからない場合は null を返す。
 export const getFurnitureById = (furnitureId) =>
