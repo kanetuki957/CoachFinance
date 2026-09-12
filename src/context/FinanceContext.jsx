@@ -378,6 +378,14 @@ export const FinanceProvider = ({ children }) => {
     return purchase.result;
   };
 
+  const toggleFavoriteProduct = (productId) => {
+    const favorites = gameRef.current.favoriteProductIds ?? [];
+    const favoriteProductIds = favorites.includes(productId)
+      ? favorites.filter((id) => id !== productId)
+      : [...favorites, productId];
+    commitGame({ ...gameRef.current, favoriteProductIds });
+  };
+
   // 所持家具を部屋へ配置する窓口。
   const placeOwnedFurniture = (furnitureId) => {
     const placement = placeFurniture(gameRef.current, furnitureId);
@@ -400,7 +408,7 @@ export const FinanceProvider = ({ children }) => {
   };
 
   return (
-    <GoalContext.Provider value={{ activeGoal, game, profile, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, placeOwnedFurniture, movePlacedFurniture, removePlacedFurniture }}>
+    <GoalContext.Provider value={{ activeGoal, game, profile, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, placeOwnedFurniture, movePlacedFurniture, removePlacedFurniture }}>
       {children}
     </GoalContext.Provider>
   );

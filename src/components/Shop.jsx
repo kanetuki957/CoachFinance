@@ -1,74 +1,86 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowLeft, ShoppingBag } from 'lucide-react';
-import { SHOP_CATEGORIES, PRODUCT_CATALOG, getProductById } from '../domain/shop/productCatalog';
+import { ArrowLeft, ChevronRight, Heart, Home, Sparkles } from 'lucide-react';
+import { POCO_CATEGORIES, getProductsByBrand } from '../domain/shop/productCatalog';
+import { getBrandById } from '../domain/shop/brands';
 import { getOwnedProductQuantity } from '../domain/shop/productInventory';
-import { getOwnedFurnitureQuantity } from '../domain/furniture/furnitureInventory';
 import { useFinance } from '../context/FinanceContext';
 
-const RESULT_MESSAGES = {
-  'insufficient-funds': '所持金が足りません',
-  'not-available': '配置できるアイテムがありません',
-};
+const tagLabel = { new: 'NEW', popular: '人気', recommended: 'おすすめ' };
+
+const Coin = ({ value }) => <span className="inline-flex items-center gap-1 font-black text-[#d9762a]">● {value.toLocaleString()}</span>;
+
+const ProductVisual = ({ product, large = false }) => (
+  <div className={`relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#f9e9d2] via-[#f4d9b7] to-[#bad7c9] ${large ? 'aspect-[1.04] text-8xl' : 'aspect-square text-5xl'}`}>
+    <span className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/30" />
+    <span className="relative drop-shadow-[0_12px_10px_rgba(91,61,34,.25)]" aria-hidden="true">{product.image}</span>
+  </div>
+);
+
+const ProductCard = ({ product, favorite, onFavorite, onOpen }) => (
+  <article className="relative overflow-hidden rounded-2xl border border-[#e9dac5] bg-white shadow-sm">
+    <button type="button" onClick={() => onOpen(product)} className="block w-full text-left" aria-label={`${product.name}の詳細を見る`}>
+      <ProductVisual product={product} />
+    </button>
+    <button type="button" onClick={() => onFavorite(product.id)} className="absolute right-2 top-2 rounded-full bg-white/90 p-2 text-[#45433e] shadow-sm" aria-label={`${product.name}をお気に入り`}>
+      <Heart className={`h-4 w-4 ${favorite ? 'fill-[#d9762a] text-[#d9762a]' : ''}`} />
+    </button>
+    {product.tags[0] && <span className="absolute left-2 top-2 rounded-full bg-[#315d52] px-2 py-1 text-[10px] font-black text-white">{tagLabel[product.tags[0]]}</span>}
+    <button type="button" onClick={() => onOpen(product)} className="block w-full p-3 text-left">
+      <h3 className="min-h-10 text-sm font-black leading-snug text-[#292b28]">{product.name}</h3>
+      <Coin value={product.price} />
+    </button>
+  </article>
+);
+
+const BackButton = ({ onClick, label = '戻る' }) => <button type="button" onClick={onClick} className="rounded-full p-2 text-[#315d52] transition hover:bg-[#edf3ed]" aria-label={label}><ArrowLeft className="h-5 w-5" /></button>;
 
 export const Shop = ({ onBack }) => {
-  const { game, buyProduct, placeOwnedFurniture } = useFinance();
-  const [selectedCategory, setSelectedCategory] = useState('item');
-  const [message, setMessage] = useState('');
+  const { game, buyProduct, toggleFavoriteProduct, placeOwnedFurniture } = useFinance();
+  const products = useMemo(() => getProductsByBrand('poco'), []);
+  const pocoBrand = getBrandById('poco');
+  const [view, setView] = useState('brands');
+  const [category, setCategory] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [purchasedProduct, setPurchasedProduct] = useState(null);
+  const favorites = game.favoriteProductIds ?? [];
 
-  // 選択中のカテゴリだけを表示し、スマートフォンでも商品を探しやすくする。
-  const products = useMemo(
-    () => PRODUCT_CATALOG.filter((product) => product.category === selectedCategory),
-    [selectedCategory],
-  );
-  const selectedCategoryData = SHOP_CATEGORIES.find((category) => category.id === selectedCategory);
-
-  const purchase = (productId) => {
-    const result = buyProduct(productId);
-    setMessage(result.ok ? `${result.product.name}を購入しました` : RESULT_MESSAGES[result.reason] ?? '購入できません');
+  const openProduct = (product) => { setSelectedProduct(product); setView('detail'); };
+  const favorite = (productId) => toggleFavoriteProduct(productId);
+  const purchase = () => {
+    const result = buyProduct(selectedProduct.id);
+    if (result.ok) { setPurchasedProduct(result.product); setView('complete'); }
   };
+  const goHome = () => { setCategory(null); setSelectedProduct(null); setView('home'); };
+  const renderCards = (items, className = 'flex gap-3 overflow-x-auto pb-2') => <div className={className}>{items.map((product) => <div key={product.id} className={className.includes('grid') ? '' : 'w-40 shrink-0'}><ProductCard product={product} favorite={favorites.includes(product.id)} onFavorite={favorite} onOpen={openProduct} /></div>)}</div>;
 
-  const place = (furnitureId) => {
-    const result = placeOwnedFurniture(furnitureId);
-    setMessage(result.ok ? '部屋に配置しました。ホーム画面で位置を変更できます。' : RESULT_MESSAGES[result.reason]);
-  };
-
-  return (
-    <div className="min-h-[100dvh] bg-[#10182b] text-slate-100">
+  if (view === 'brands') return (
+    <div className="min-h-[100dvh] bg-[#f8f5ee] text-[#292b28]">
       <main className="mx-auto w-full max-w-md px-4 pb-10 pt-5 sm:px-5">
-        <header className="flex items-center gap-3">
-          <button onClick={onBack} className="rounded-xl p-2 text-slate-300 transition hover:bg-white/10" aria-label="ホームに戻る"><ArrowLeft className="h-5 w-5" /></button>
-          <div className="flex-1"><p className="text-[11px] font-black tracking-[0.22em] text-amber-300">SHOP</p><h1 className="mt-1 text-2xl font-black">ショップ</h1></div>
-          <div className="rounded-2xl border border-amber-300/25 bg-amber-300/10 px-3 py-2 text-right"><span className="block text-[10px] font-black text-amber-200">所持金</span><span className="font-black text-amber-300">¥{game.money.toLocaleString()}</span></div>
-        </header>
-
-        <section className="mt-5 grid grid-cols-4 gap-2" aria-label="ショップカテゴリ">
-          {SHOP_CATEGORIES.map((category) => {
-            const isSelected = selectedCategory === category.id;
-            return <button key={category.id} type="button" onClick={() => { setSelectedCategory(category.id); setMessage(''); }} aria-pressed={isSelected} className={`flex min-h-20 flex-col items-center justify-center rounded-2xl border px-1 py-2 transition ${isSelected ? 'border-amber-300 bg-amber-300 text-slate-950 shadow-lg shadow-amber-950/30' : 'border-white/10 bg-slate-900/70 text-slate-300 hover:bg-slate-800'}`}><span className="text-2xl" aria-hidden="true">{category.icon}</span><span className="mt-1 text-xs font-black">{category.name}</span></button>;
-          })}
-        </section>
-
-        {message && <p className="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-3 text-sm font-bold text-emerald-100" role="status">{message}</p>}
-
-        <section className="mt-6" aria-label={`${selectedCategoryData?.name ?? ''}の商品一覧`}>
-          <div className="flex items-end justify-between"><div><p className="text-xs font-black tracking-[0.16em] text-amber-300">CATEGORY</p><h2 className="mt-1 text-xl font-black">{selectedCategoryData?.name}</h2></div><span className="text-xs font-bold text-slate-400">{selectedCategoryData?.description}</span></div>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            {products.map((product) => {
-              const ownedQuantity = getOwnedProductQuantity(game.ownedProducts, product.id);
-              const cannotAfford = game.money < product.price;
-              return <article key={product.id} className="overflow-hidden rounded-3xl border border-white/10 bg-slate-900/80 shadow-lg shadow-slate-950/20"><div className="flex aspect-[1.15] items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 text-5xl">{product.image}</div><div className="p-3"><h3 className="min-h-10 text-sm font-black leading-snug">{product.name}</h3><div className="mt-1 flex items-center justify-between gap-2"><span className="text-sm font-black text-amber-300">¥{product.price.toLocaleString()}</span><span className="text-[10px] font-bold text-slate-500">所持 × {ownedQuantity}</span></div><button type="button" disabled={cannotAfford} onClick={() => purchase(product.id)} className="mt-3 w-full rounded-xl bg-amber-300 px-2 py-2.5 text-xs font-black text-slate-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400">{cannotAfford ? '所持金不足' : '購入する'}</button></div></article>;
-            })}
-          </div>
-        </section>
-
-        {selectedCategory === 'item' && <section className="mt-6 rounded-3xl border border-white/10 bg-slate-900/70 p-4"><div className="flex items-center gap-2"><ShoppingBag className="h-5 w-5 text-emerald-300" /><div><h2 className="font-black">所持アイテム</h2><p className="text-[11px] font-bold text-slate-500">購入済みのアイテムを部屋へ配置できます</p></div></div><div className="mt-4 space-y-2">{game.ownedFurniture.length ? game.ownedFurniture.map(({ furnitureId, quantity }) => {
-          const furniture = getProductById(furnitureId);
-          if (!furniture) return null;
-          const placed = game.placedFurniture.filter((item) => item.furnitureId === furnitureId).length;
-          const canPlace = placed < getOwnedFurnitureQuantity(game.ownedFurniture, furnitureId);
-          return <div key={furnitureId} className="flex items-center gap-3 rounded-2xl bg-slate-800/80 p-3"><span className="text-2xl">{furniture.image}</span><span className="flex-1 text-sm font-black">{furniture.name}<span className="mt-0.5 block text-[11px] text-slate-500">所持 {quantity} / 配置 {placed}</span></span><button disabled={!canPlace} onClick={() => place(furnitureId)} className="rounded-xl bg-emerald-400 px-3 py-2 text-xs font-black text-slate-950 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400">配置する</button></div>;
-        }) : <p className="text-center text-sm font-bold text-slate-400">まだアイテムを持っていません。</p>}</div></section>}
+        <header className="flex items-center gap-3"><BackButton onClick={onBack} label="ホームに戻る" /><div className="flex-1"><p className="text-[10px] font-black tracking-[.2em] text-[#738476]">IN-GAME SHOP</p><h1 className="text-2xl font-black">ブランドを選ぶ</h1></div><div className="rounded-xl bg-[#315d52] px-3 py-2 text-right text-white"><span className="block text-[10px] font-bold text-white/70">所持コイン</span><span className="text-sm font-black">● {game.money.toLocaleString()}</span></div></header>
+        <button type="button" onClick={goHome} className="mt-8 w-full overflow-hidden rounded-[2rem] bg-[#315d52] text-left text-white shadow-lg shadow-[#315d52]/20">
+          <div className="relative min-h-64 overflow-hidden bg-gradient-to-br from-[#3f7567] via-[#759e7c] to-[#e9b879] p-6"><span className="absolute -right-5 bottom-0 text-9xl">🛋️</span><span className="absolute bottom-8 right-28 text-6xl">🪴</span><span className="absolute left-9 top-14 text-5xl">💡</span><p className="relative text-xs font-black tracking-[.25em] text-[#f9dfae]">LIVING, MADE EASY</p><img src={pocoBrand.logo} alt={pocoBrand.name} className="relative mt-3 h-auto w-auto max-w-40 rounded-md bg-white px-2 py-1 object-contain" /><p className="relative mt-3 max-w-52 text-sm font-bold leading-relaxed text-white/90">{pocoBrand.tagline}</p></div>
+          <div className="flex items-center justify-between p-5 font-black">POCO HOMEへ <ChevronRight className="h-5 w-5" /></div>
+        </button>
       </main>
     </div>
   );
+
+  if (view === 'category') {
+    const categoryData = POCO_CATEGORIES.find((item) => item.id === category);
+    const categoryProducts = products.filter((product) => product.category === category);
+    return <div className="min-h-[100dvh] bg-[#f8f5ee] text-[#292b28]"><main className="mx-auto w-full max-w-md px-4 pb-10 pt-5 sm:px-5"><header className="flex items-center gap-2"><BackButton onClick={goHome} /><div className="flex-1"><p className="text-[10px] font-black tracking-[.18em] text-[#738476]">POCO / CATEGORY</p><h1 className="text-2xl font-black">{categoryData?.name}</h1></div><div className="rounded-xl bg-white px-3 py-2 text-xs shadow-sm"><Coin value={game.money} /></div></header><div className="mt-6 flex items-center justify-between"><p className="text-sm font-bold text-[#6b7067]">{categoryData?.description}</p><span className="rounded-full border border-[#d8d2c4] px-3 py-1 text-xs font-bold">{categoryProducts.length} items</span></div><section className="mt-4">{renderCards(categoryProducts, 'grid grid-cols-2 gap-3')}</section></main></div>;
+  }
+
+  if (view === 'detail' && selectedProduct) {
+    const missing = Math.max(selectedProduct.price - game.money, 0);
+    const progress = Math.min((game.money / selectedProduct.price) * 100, 100);
+    return <div className="min-h-[100dvh] bg-[#f8f5ee] text-[#292b28]"><main className="mx-auto w-full max-w-md pb-8"><header className="flex items-center gap-2 px-4 pt-5 sm:px-5"><BackButton onClick={() => category ? setView('category') : goHome()} /><span className="flex-1"><img src={pocoBrand.logo} alt={pocoBrand.name} className="h-auto w-auto max-w-20 object-contain" /></span><button type="button" onClick={() => favorite(selectedProduct.id)} className="rounded-full p-2" aria-label="お気に入り"><Heart className={`h-5 w-5 ${favorites.includes(selectedProduct.id) ? 'fill-[#d9762a] text-[#d9762a]' : 'text-[#315d52]'}`} /></button></header><div className="mt-4"><ProductVisual product={selectedProduct} large /></div><div className="px-5 pt-6"><img src={pocoBrand.logo} alt={pocoBrand.name} className="h-auto w-auto max-w-16 object-contain" /><h1 className="mt-2 text-2xl font-black">{selectedProduct.name}</h1><p className="mt-3 text-xl"><Coin value={selectedProduct.price} /></p><p className="mt-5 text-sm font-bold leading-relaxed text-[#60635e]">{selectedProduct.description}</p><section className="mt-6 rounded-2xl bg-white p-4 shadow-sm"><p className="text-xs font-black text-[#738476]">あなたの所持金</p><p className="mt-1 text-lg"><Coin value={game.money} /></p><div className="mt-4 flex justify-between text-xs font-bold"><span>{game.money.toLocaleString()} / {selectedProduct.price.toLocaleString()}</span><span>{missing ? `あと ${missing.toLocaleString()} コインで買える！` : '今すぐ購入できます'}</span></div><div className="mt-2 h-3 overflow-hidden rounded-full bg-[#e9e2d5]"><div className="h-full rounded-full bg-[#d9762a] transition-all" style={{ width: `${progress}%` }} /></div></section><button type="button" disabled={missing > 0} onClick={purchase} className="mt-5 w-full rounded-2xl bg-[#315d52] py-4 font-black text-white shadow-lg shadow-[#315d52]/20 transition hover:bg-[#244b40] disabled:cursor-not-allowed disabled:bg-[#b9b8ae]">{missing ? `あと ${missing.toLocaleString()} コインで購入できます` : '購入する'}</button></div></main></div>;
+  }
+
+  if (view === 'complete' && purchasedProduct) return <div className="min-h-[100dvh] bg-[#f8f5ee] text-[#292b28]"><main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col justify-center px-5 text-center"><span className="text-7xl">{purchasedProduct.image}</span><p className="mt-6 text-xs font-black tracking-[.2em] text-[#738476]">POCO HOME</p><h1 className="mt-2 text-3xl font-black">購入しました！</h1><p className="mt-2 text-lg font-bold">{purchasedProduct.name}</p><p className="mt-3 text-sm font-bold text-[#6b7067]">部屋で好きな場所に動かしてみましょう。</p><button type="button" onClick={() => { placeOwnedFurniture(purchasedProduct.id); onBack(); }} className="mt-8 rounded-2xl bg-[#315d52] py-4 font-black text-white">今すぐ配置する</button><button type="button" onClick={goHome} className="mt-3 rounded-2xl border border-[#315d52] py-4 font-black text-[#315d52]">ショップに戻る</button></main></div>;
+
+  const recommended = products.filter((product) => product.tags.includes('recommended'));
+  const newProducts = products.filter((product) => product.tags.includes('new'));
+  const popular = products.filter((product) => product.tags.includes('popular'));
+  return <div className="min-h-[100dvh] bg-[#f8f5ee] text-[#292b28]"><main className="mx-auto w-full max-w-md px-4 pb-12 pt-5 sm:px-5"><header className="flex items-center gap-3"><BackButton onClick={() => setView('brands')} /><div className="flex-1"><p className="text-xs font-black tracking-[.22em] text-[#d9762a]">LIVING, MADE EASY</p><img src={pocoBrand.logo} alt={pocoBrand.name} className="mt-1 h-auto w-auto max-w-24 object-contain" /></div><div className="rounded-xl bg-white px-3 py-2 text-right shadow-sm"><span className="block text-[10px] font-bold text-[#738476]">所持コイン</span><Coin value={game.money} /></div><Heart className="h-5 w-5 text-[#315d52]" aria-label="お気に入り" /></header><section className="mt-6"><h2 className="text-lg font-black">カテゴリから探す</h2><div className="mt-3 flex gap-3 overflow-x-auto pb-2">{POCO_CATEGORIES.map((item) => <button key={item.id} type="button" onClick={() => { setCategory(item.id); setView('category'); }} className="w-24 shrink-0 overflow-hidden rounded-2xl border border-[#e5d9c6] bg-white text-left shadow-sm"><div className="flex aspect-square items-center justify-center bg-[#e5f0e7] text-4xl">{item.image}</div><span className="block px-2 py-2 text-center text-xs font-black">{item.name}</span></button>)}</div></section><button type="button" onClick={() => { setCategory('sofa'); setView('category'); }} className="relative mt-7 block min-h-60 w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#d8a36d] via-[#c7d7bc] to-[#6e9a87] p-6 text-left text-white"><span className="absolute bottom-4 right-6 text-9xl">🛋️</span><span className="absolute right-32 top-8 text-5xl">🪴</span><span className="absolute bottom-12 left-9 text-5xl">🧶</span><p className="relative text-xs font-black tracking-[.2em] text-white/80">POCO ROOM IDEA</p><h2 className="relative mt-2 max-w-52 text-2xl font-black leading-tight">好きなものを、気軽に重ねる部屋。</h2><span className="relative mt-5 inline-flex items-center gap-1 rounded-full bg-white/90 px-3 py-2 text-xs font-black text-[#315d52]">部屋をのぞく <ChevronRight className="h-4 w-4" /></span></button><section className="mt-8"><h2 className="text-xl font-black">おすすめ</h2><div className="mt-3">{renderCards(recommended)}</div></section><section className="mt-7"><h2 className="text-xl font-black">NEW</h2><div className="mt-3">{renderCards(newProducts)}</div></section><section className="mt-7"><h2 className="text-xl font-black">人気アイテム</h2><div className="mt-3">{renderCards(popular)}</div></section><section className="mt-8 rounded-2xl bg-[#e5f0e7] p-4"><div className="flex items-center gap-3"><Home className="h-5 w-5 text-[#315d52]" /><div><h2 className="font-black">購入した家具</h2><p className="text-xs font-bold text-[#667068]">部屋には購入数まで配置できます</p></div></div><p className="mt-3 text-sm font-bold text-[#315d52]">{game.ownedFurniture.reduce((total, item) => total + item.quantity, 0)} 点を所持中</p></section></main></div>;
 };

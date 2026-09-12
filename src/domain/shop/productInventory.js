@@ -15,7 +15,7 @@ export const normalizeProductInventory = (game) => {
   (game?.ownedFurniture ?? []).forEach((item) => {
     const productId = typeof item === 'string' ? item : item?.furnitureId;
     const quantity = typeof item === 'string' ? 1 : Number(item?.quantity) || 0;
-    if (getProductById(productId)?.category === 'item' && quantity > 0) {
+    if (getProductById(productId)?.isFurniture && quantity > 0) {
       quantities.set(productId, Math.max(quantities.get(productId) ?? 0, quantity));
     }
   });
@@ -33,11 +33,11 @@ export const purchaseProduct = (game, productId) => {
   if (!product) return { game, result: { ok: false, reason: 'not-found' } };
   if (game.money < product.price) return { game, result: { ok: false, reason: 'insufficient-funds', product } };
 
-  const furniturePurchase = product.category === 'item' ? purchaseFurniture(game, productId) : null;
+  const furniturePurchase = product.isFurniture ? purchaseFurniture(game, productId) : null;
   const sourceGame = furniturePurchase?.game ?? { ...game, money: game.money - product.price };
   const inventory = normalizeProductInventory(sourceGame);
   // item は purchaseFurniture 済みの所持数を移行するだけ。ここで増やすと二重加算になる。
-  const ownedProducts = product.category === 'item'
+  const ownedProducts = product.isFurniture
     ? inventory.ownedProducts
     : (() => {
       const quantity = getOwnedProductQuantity(inventory.ownedProducts, productId);

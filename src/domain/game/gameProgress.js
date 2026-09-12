@@ -8,6 +8,7 @@ export const DEFAULT_GAME_STATE = Object.freeze({
   ownedFurniture: [],
   placedFurniture: [],
   ownedProducts: [],
+  favoriteProductIds: [],
 });
 
 export const normalizeGameState = (game) => ({
@@ -15,6 +16,7 @@ export const normalizeGameState = (game) => ({
   wealth: Math.min(Math.max(Number(game?.wealth) || 0, 0), STATUS_MAX),
   strength: Math.min(Math.max(Number(game?.strength) || 0, 0), STATUS_MAX),
   money: Math.max(Number(game?.money) || 0, 0),
+  favoriteProductIds: [...new Set((game?.favoriteProductIds ?? []).filter((id) => typeof id === 'string'))],
   ...normalizeFurnitureState(game),
   // 既存の ownedFurniture を読み込み時に ownedProducts へも反映して互換性を保つ。
   ...normalizeProductInventory(game),
