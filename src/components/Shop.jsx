@@ -9,8 +9,16 @@ const Coin = ({ value }) => <span className="inline-flex items-center gap-1 font
 const BackButton = ({ onClick, label = '戻る' }) => <button type="button" onClick={onClick} className="rounded-full p-2 text-[#315d52] transition hover:bg-[#edf3ed]" aria-label={label}><ArrowLeft className="h-5 w-5" /></button>;
 const BrandLogo = ({ brand, className = '' }) => brand.logo ? <img src={brand.logo} alt={brand.name} className={`h-auto w-auto object-contain ${className}`} /> : <span className={`font-black tracking-[.18em] ${className}`}>{brand.name}</span>;
 
-const ProductVisual = ({ product, large = false }) => <div className={`relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#f9e9d2] via-[#f4d9b7] to-[#bad7c9] ${large ? 'aspect-[1.04] text-8xl' : 'aspect-square text-5xl'}`}><span className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/30" /><span className="relative drop-shadow-[0_12px_10px_rgba(91,61,34,.25)]" aria-hidden="true">{product.image}</span></div>;
-const ProductCard = ({ product, favorite, onFavorite, onOpen }) => <article className="relative overflow-hidden rounded-2xl border border-[#e9dac5] bg-white shadow-sm"><button type="button" onClick={() => onOpen(product)} className="block w-full text-left" aria-label={`${product.name}の詳細を見る`}><ProductVisual product={product} /></button><button type="button" onClick={() => onFavorite(product.id)} className="absolute right-2 top-2 rounded-full bg-white/90 p-2 text-[#45433e] shadow-sm" aria-label={`${product.name}をお気に入り`}><Heart className={`h-4 w-4 ${favorite ? 'fill-[#d9762a] text-[#d9762a]' : ''}`} /></button>{product.tags[0] && <span className="absolute left-2 top-2 rounded-full bg-[#315d52] px-2 py-1 text-[10px] font-black text-white">{tagLabel[product.tags[0]]}</span>}<button type="button" onClick={() => onOpen(product)} className="block w-full p-3 text-left"><h3 className="min-h-10 text-sm font-black leading-snug text-[#292b28]">{product.name}</h3><Coin value={product.price} /></button></article>;
+const ProductVisual = ({ product, large = false }) => (
+  <div className={`relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#f9e9d2] via-[#f4d9b7] to-[#bad7c9] ${large ? 'aspect-[1.04]' : 'aspect-square'}`}>
+    <span className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/30" />
+    <img
+      src={product.image}
+      alt={product.name}
+      className={`relative h-full w-full object-contain drop-shadow-[0_12px_10px_rgba(91,61,34,.25)] ${large ? 'p-6' : 'p-3'}`}
+    />
+  </div>
+);const ProductCard = ({ product, favorite, onFavorite, onOpen }) => <article className="relative overflow-hidden rounded-2xl border border-[#e9dac5] bg-white shadow-sm"><button type="button" onClick={() => onOpen(product)} className="block w-full text-left" aria-label={`${product.name}の詳細を見る`}><ProductVisual product={product} /></button><button type="button" onClick={() => onFavorite(product.id)} className="absolute right-2 top-2 rounded-full bg-white/90 p-2 text-[#45433e] shadow-sm" aria-label={`${product.name}をお気に入り`}><Heart className={`h-4 w-4 ${favorite ? 'fill-[#d9762a] text-[#d9762a]' : ''}`} /></button>{product.tags[0] && <span className="absolute left-2 top-2 rounded-full bg-[#315d52] px-2 py-1 text-[10px] font-black text-white">{tagLabel[product.tags[0]]}</span>}<button type="button" onClick={() => onOpen(product)} className="block w-full p-3 text-left"><h3 className="min-h-10 text-sm font-black leading-snug text-[#292b28]">{product.name}</h3><Coin value={product.price} /></button></article>;
 
 const BrandCard = ({ brand, onSelect }) => {
   const available = brand.status === 'available';

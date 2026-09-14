@@ -1,4 +1,5 @@
 // ブランドを追加するときは、このカテゴリ配列と PRODUCT_CATALOG に同じ brand を足すだけで使えます。
+//ここでカテゴリ別の商品を分けれる↓この型でカテゴリを自由に追加できる
 export const POCO_CATEGORIES = [
   { id: 'storage', name: '収納', image: '🗄️', description: 'すっきり片づく、毎日の収納' },
   { id: 'sofa', name: 'ソファ', image: '🛋️', description: 'くつろぎの時間をつくる' },
@@ -6,13 +7,24 @@ export const POCO_CATEGORIES = [
   { id: 'decor', name: '植物・雑貨', image: '🪴', description: '暮らしに小さな彩りを' },
   { id: 'lighting', name: '照明', image: '💡', description: '心地よい明かりを選ぶ' },
   { id: 'rug', name: 'ラグ', image: '🧶', description: '足元から部屋を整える' },
+  { id: 'bed', name: 'ベッド', image: '🛏️', description: '眠る時間を心地よく' },
+  { id: 'tv', name: 'テレビ', image: '📺', description: '家族で楽しむ映像体験' },
 ];
 
 // 旧ショップの表示互換用。POCO HOME では POCO_CATEGORIES を使用します。
 export const SHOP_CATEGORIES = POCO_CATEGORIES;
 
 const poco = (id, name, category, price, image, description, tags, width, height) => ({
-  id, brand: 'poco', name, category, price, image, description, tags,
+  id,
+  brand: 'poco',
+  name,
+  category,
+  price,
+  // A supplied /images path is kept as-is. Existing catalog entries use the
+  // standard public-image convention until their individual paths are written.
+  image: image?.startsWith('/') ? image : `/images/furniture/poco/${category}/${id}.png`,
+  description,
+  tags,
   isFurniture: true, width, height,
 });
 
@@ -44,7 +56,7 @@ export const PRODUCT_CATALOG = [
   poco('poco_sofa_001', 'くもり空 ソファ', 'sofa', 850, '🛋️', 'どんな部屋にも馴染む、ゆったり2人掛けソファ。', ['popular'], 125, 72),
   poco('poco_sofa_002', 'ひとり時間チェア', 'sofa', 520, '💺', '読書にも休憩にもぴったりな、丸みのあるチェア。', ['new'], 65, 75),
   poco('poco_sofa_003', 'ふかふかオットマン', 'sofa', 260, '🟫', 'ソファの相棒にも、来客用の椅子にもなる一台。', ['recommended'], 58, 42),
-  poco('poco_table_001', 'オーク ダイニングテーブル', 'table-chair', 780, '🪵', '食事も作業も心地よく。明るい木目のコンパクトテーブル。', ['popular'], 112, 68),
+  poco('poco_table_001', 'ナチュラル ダイニングテーブル', 'table-chair', 780, '🪵', '食事も作業も心地よく。明るい木目のコンパクトテーブル。', ['popular'], 112, 68),
   poco('poco_table_002', 'ウッドサイドテーブル', 'table-chair', 300, '🪑', '飲み物や本をそっと置ける、部屋に馴染む小さなテーブル。', ['recommended'], 58, 54),
   poco('poco_table_003', 'ナチュラルチェア', 'table-chair', 240, '🪑', '軽くて置きやすい、飽きのこない木製チェア。', ['new'], 56, 68),
   poco('poco_decor_001', '窓辺の観葉植物', 'decor', 120, '🪴', 'ひとつ置くだけで部屋の空気が変わる、育てやすいグリーン。', ['recommended', 'popular'], 52, 72),
@@ -54,6 +66,9 @@ export const PRODUCT_CATALOG = [
   poco('poco_lighting_002', 'ミニテーブルライト', 'lighting', 220, '🔆', 'ベッドサイドにもデスクにも合う、小さな明かり。', ['new'], 38, 50),
   poco('poco_rug_001', 'チェックコットンラグ', 'rug', 420, '🧶', '足元をやわらかく彩る、洗えるコットンラグ。', ['popular'], 115, 55),
   poco('poco_rug_002', 'まるい玄関マット', 'rug', 190, '⭕', '帰るたびに気分が少し上がる、丸いミニラグ。', ['recommended'], 62, 40),
+  poco('poco_bed_001', 'ふかふかベッド', 'bed', 1200, '🛏', '心を落ち着ける、ふかふかの寝具。', ['popular'], 150, 100),
+  poco('poco_TV_001', 'スマートテレビ５０型', 'tv', 1200, '📺', '家族で楽しめる、最新のスマートテレビ５０型。', ['popular'], 150, 100),
+
 ];
 
 export const getProductById = (productId) => PRODUCT_CATALOG.find((product) => product.id === productId) ?? null;
