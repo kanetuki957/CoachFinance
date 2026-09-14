@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import { getFurnitureById } from '../../domain/furniture/furnitureCatalog';
+import { getProductById, isProductImagePath } from '../../domain/shop/productCatalog';
 import { ROOM_SIZE } from '../../domain/furniture/furnitureInventory';
 
 export const RoomFurniture = ({ roomRef, items, onMove, onRemove }) => {
@@ -36,8 +36,9 @@ export const RoomFurniture = ({ roomRef, items, onMove, onRemove }) => {
   };
 
   return items.map((item) => {
-    const furniture = getFurnitureById(item.furnitureId);
-    if (!furniture) return null;
+    const product = getProductById(item.furnitureId);
+    if (!product?.isFurniture) return null;
+    const furniture = product;
     const isSelected = selectedInstanceId === item.instanceId;
     return (
       <div
@@ -50,9 +51,13 @@ export const RoomFurniture = ({ roomRef, items, onMove, onRemove }) => {
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         className={`absolute touch-none select-none ${isSelected ? 'ring-2 ring-amber-300 ring-offset-2 ring-offset-slate-900' : ''}`}
-        style={{ left: `${(item.x / ROOM_SIZE.width) * 100}%`, top: `${(item.y / ROOM_SIZE.height) * 100}%`, width: `${(furniture.width / ROOM_SIZE.width) * 100}%`, height: `${(furniture.height / ROOM_SIZE.height) * 100}%`, zIndex: item.zIndex }}
+        style={{ left: `${(item.x / ROOM_SIZE.width) * 100}%`, top: `${(item.y / ROOM_SIZE.height) * 100}%`, width: `${(product.width / ROOM_SIZE.width) * 100}%`, height: `${(product.height / ROOM_SIZE.height) * 100}%`, zIndex: item.zIndex }}
       >
-        <span className="flex h-full w-full items-center justify-center text-[clamp(1.8rem,8vw,4rem)] drop-shadow-lg">{furniture.image}</span>
+        {isProductImagePath(product.image) ? (
+          <img src={product.image} alt={product.name} draggable={false} className="pointer-events-none block h-full w-full select-none object-contain drop-shadow-lg" />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center text-[clamp(1.8rem,8vw,4rem)] drop-shadow-lg">{product.image}</span>
+        )}
         {isSelected && <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={() => onRemove(item.instanceId)} className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-rose-400 text-slate-950 shadow" aria-label={`${furniture.name}を片付ける`}><X className="h-4 w-4 stroke-[3]" /></button>}
       </div>
     );

@@ -72,4 +72,8 @@ export const PRODUCT_CATALOG = [
 ];
 
 export const getProductById = (productId) => PRODUCT_CATALOG.find((product) => product.id === productId) ?? null;
+
+export const isProductImagePath = (image) =>
+  typeof image === 'string' &&
+  (image.startsWith('/') || image.startsWith('http') || /\.(png|jpe?g|webp|gif|svg)$/i.test(image));
 export const getProductsByBrand = (brand) => PRODUCT_CATALOG.filter((product) => product.brand === brand);

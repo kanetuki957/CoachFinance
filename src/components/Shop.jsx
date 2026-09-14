@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowLeft, ChevronRight, Heart, Home } from 'lucide-react';
-import { POCO_CATEGORIES, getProductsByBrand } from '../domain/shop/productCatalog';
+import { POCO_CATEGORIES, getProductsByBrand, isProductImagePath } from '../domain/shop/productCatalog';
 import { BRANDS, getBrandById } from '../domain/shop/brands';
 import { useFinance } from '../context/FinanceContext';
 
@@ -12,7 +12,7 @@ const BrandLogo = ({ brand, className = '' }) => brand.logo ? <img src={brand.lo
 const ProductVisual = ({ product, large = false }) => (
   <div className={`relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#f9e9d2] via-[#f4d9b7] to-[#bad7c9] ${large ? 'aspect-[1.04]' : 'aspect-square'}`}>
     <span className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/30" />
-    {typeof product.image === 'string' && (product.image.startsWith('/') || product.image.startsWith('http') || /\.(png|jpe?g|webp|gif|svg)$/i.test(product.image)) ? (
+    {isProductImagePath(product.image) ? (
       <img
         src={product.image}
         alt={product.name}
