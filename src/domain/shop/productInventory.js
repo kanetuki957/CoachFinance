@@ -29,10 +29,14 @@ export const getOwnedProductQuantity = (ownedProducts, productId) =>
 
 // 商品を購入する共通処理。item は既存の家具在庫も同時に更新し、将来の配置機能を維持する。
 export const purchaseProduct = (game, productId) => {
+  // カタログにない ID は、残高・在庫を一切変更せず失敗として返す。
   const product = getProductById(productId);
   if (!product) return { game, result: { ok: false, reason: 'not-found' } };
+  // UI の disabled は補助であり、このドメイン層でも必ず残高を検証する。
   if (game.money < product.price) return { game, result: { ok: false, reason: 'insufficient-funds', product } };
 
+  // 家具は旧家具在庫との互換性を保つ purchaseFurniture を再利用する。
+  // 家具以外はここで価格だけを差し引く。
   const furniturePurchase = product.isFurniture ? purchaseFurniture(game, productId) : null;
   const sourceGame = furniturePurchase?.game ?? { ...game, money: game.money - product.price };
   const inventory = normalizeProductInventory(sourceGame);
@@ -40,11 +44,13 @@ export const purchaseProduct = (game, productId) => {
   const ownedProducts = product.isFurniture
     ? inventory.ownedProducts
     : (() => {
+      // 非家具は商品在庫のみを 1 個増やす。初回購入では在庫レコードを作成する。
       const quantity = getOwnedProductQuantity(inventory.ownedProducts, productId);
       return quantity
         ? inventory.ownedProducts.map((item) => item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item)
         : [...inventory.ownedProducts, { productId, quantity: 1 }];
     })();
 
+  // 更新済み game は呼び出し元が commit し、UI には購入した商品を返す。
   return { game: { ...sourceGame, ownedProducts }, result: { ok: true, product } };
 };

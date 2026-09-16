@@ -366,14 +366,18 @@ export const FinanceProvider = ({ children }) => {
 
   // ショップから呼ばれる購入窓口。購入成功時だけ状態を保存対象へ反映する。
   const buyFurniture = (furnitureId) => {
+    // ref を読むことで、連続クリック時も最新のゲーム状態を基準に購入を判定する。
     const purchase = purchaseFurniture(gameRef.current, furnitureId);
+    // 失敗時は状態を変更せず、画面側が reason を使えるよう結果だけ返す。
     if (purchase.result.ok) commitGame(purchase.game);
     return purchase.result;
   };
 
   // ショップの全カテゴリから利用する購入窓口。商品種別ごとの在庫処理はドメイン層へ委譲する。
   const buyProduct = (productId) => {
+    // 商品種別ごとの残高・在庫更新は productInventory に集約している。
     const purchase = purchaseProduct(gameRef.current, productId);
+    // 成功した購入だけを正規化・保存対象の game state に反映する。
     if (purchase.result.ok) commitGame(purchase.game);
     return purchase.result;
   };
@@ -388,6 +392,7 @@ export const FinanceProvider = ({ children }) => {
 
   // 所持家具を部屋へ配置する窓口。
   const placeOwnedFurniture = (furnitureId) => {
+    // 購入数を超えて配置できないかの判定はドメイン層で行う。
     const placement = placeFurniture(gameRef.current, furnitureId);
     if (placement.ok) commitGame(placement.game);
     return placement;

@@ -44,17 +44,22 @@ export const getOwnedFurnitureQuantity = (ownedFurniture, furnitureId) =>
 // 所持金を消費して家具を購入し、更新後のゲーム状態と購入結果を返す。
 
 export const purchaseFurniture = (game, furnitureId) => {
+  // 購入前に保存データを正規化し、古い配列形式でも安全に数量を更新する。
   const furniture = getFurnitureById(furnitureId);
   const state = normalizeFurnitureState(game);
   if (!furniture) return { game, result: { ok: false, reason: 'not-found' } };
   if (game.money < furniture.price) return { game, result: { ok: false, reason: 'insufficient-funds', furniture } };
+
+  // 同じ家具はレコードを重複させず quantity を加算し、初回だけ新規レコードを追加する。
   const quantity = getOwnedFurnitureQuantity(state.ownedFurniture, furnitureId);
   const ownedFurniture = quantity ? state.ownedFurniture.map((item) => item.furnitureId === furnitureId ? { ...item, quantity: item.quantity + 1 } : item) : [...state.ownedFurniture, { furnitureId, quantity: 1 }];
+  // 購入では所持数のみを増やす。部屋への配置は placeFurniture の責務。
   return { game: { ...game, ...state, money: game.money - furniture.price, ownedFurniture }, result: { ok: true, furniture } };
 };
 // 所持していて、まだ部屋に置いていない家具を初期位置に配置する。
 
 export const placeFurniture = (game, furnitureId) => {
+  // 配置済み数と所持数を比べ、同一家具を購入数より多く置かない。
   const state = normalizeFurnitureState(game);
   const furniture = getFurnitureById(furnitureId);
   const ownedQuantity = getOwnedFurnitureQuantity(state.ownedFurniture, furnitureId);
@@ -62,6 +67,7 @@ export const placeFurniture = (game, furnitureId) => {
   if (!furniture || placedQuantity >= ownedQuantity) return { game, ok: false, reason: 'not-available' };
   const fallback = FURNITURE_DEFAULT_POSITIONS[furnitureId] ?? { x: 100, y: 180 };
   return {
+    // 新しい配置には固有 ID と重なり順を与え、初期座標も部屋の範囲内に収める。
     game: { ...game, ...state, placedFurniture: [...state.placedFurniture, { instanceId: createInstanceId(furnitureId), furnitureId, ...clampPosition(furniture, fallback.x, fallback.y), zIndex: state.placedFurniture.length + 1 }] },
     ok: true,
   };
