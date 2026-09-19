@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronRight,
   LockKeyhole,
+  Package,
   Sparkles,
   Store,
   Target,
@@ -19,6 +20,7 @@ import { Onboarding } from './components/Onboarding';
 import { PlayerStatusPanel } from './components/home/PlayerStatusPanel';
 import { Shop } from './components/Shop';
 import { RoomFurniture } from './components/room/RoomFurniture';
+import { FurnitureInventory } from './components/room/FurnitureInventory';
 import { playCompletionSound } from './utils/playCompletionSound';
 import { createGoalBgm } from './utils/createGoalBgm';
 import { getCompletedTaskIds } from './domain/tasks/taskPlan';
@@ -71,13 +73,14 @@ const SelectedGoal = ({ goal }) => (
 );
 
 const Home = ({ openGoalSelector, onOpenShop }) => {
-  const { activeGoal, completeTask, game, movePlacedFurniture, removePlacedFurniture } = useFinance();
+  const { activeGoal, completeTask, game, placeOwnedFurniture, movePlacedFurniture, removePlacedFurniture } = useFinance();
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [memo, setMemo] = useState('');
   const [lastReward, setLastReward] = useState(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isBgmPlaying, setIsBgmPlaying] = useState(false);
+  const [isFurnitureInventoryOpen, setIsFurnitureInventoryOpen] = useState(false);
   const bgmPlayer = useRef(null);
 
   useEffect(() => () => bgmPlayer.current?.dispose(), []);
@@ -248,6 +251,14 @@ const Home = ({ openGoalSelector, onOpenShop }) => {
       </main>
 
       <TransactionForm openOnMount={openGoalSelector} />
+      {activeGoal && <button type="button" onClick={() => setIsFurnitureInventoryOpen(true)} className="fixed bottom-[4.75rem] left-6 z-40 flex items-center gap-2 rounded-full bg-slate-100 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-white" aria-label="家具インベントリを開く"><Package className="h-5 w-5" />家具</button>}
+      <FurnitureInventory
+        open={isFurnitureInventoryOpen}
+        onClose={() => setIsFurnitureInventoryOpen(false)}
+        ownedFurniture={game.ownedFurniture}
+        placedFurniture={game.placedFurniture}
+        onPlace={placeOwnedFurniture}
+      />
       <button onClick={onOpenShop} className="fixed bottom-6 left-6 z-40 flex items-center gap-2 rounded-full bg-amber-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/40 transition hover:scale-105 hover:bg-amber-200" aria-label="ショップを開く"><Store className="h-5 w-5" />SHOP</button>
       {isMemoOpen && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center">
