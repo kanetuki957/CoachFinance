@@ -58,7 +58,7 @@ export const purchaseFurniture = (game, furnitureId) => {
 };
 // 所持していて、まだ部屋に置いていない家具を初期位置に配置する。
 
-export const placeFurniture = (game, furnitureId) => {
+export const placeFurniture = (game, furnitureId, position = null) => {
   // 配置済み数と所持数を比べ、同一家具を購入数より多く置かない。
   const state = normalizeFurnitureState(game);
   const furniture = getFurnitureById(furnitureId);
@@ -66,9 +66,10 @@ export const placeFurniture = (game, furnitureId) => {
   const placedQuantity = state.placedFurniture.filter((item) => item.furnitureId === furnitureId).length;
   if (!furniture || placedQuantity >= ownedQuantity) return { game, ok: false, reason: 'not-available' };
   const fallback = FURNITURE_DEFAULT_POSITIONS[furnitureId] ?? { x: 100, y: 180 };
+  const placementPosition = clampPosition(furniture, position?.x ?? fallback.x, position?.y ?? fallback.y);
   return {
     // 新しい配置には固有 ID と重なり順を与え、初期座標も部屋の範囲内に収める。
-    game: { ...game, ...state, placedFurniture: [...state.placedFurniture, { instanceId: createInstanceId(furnitureId), furnitureId, ...clampPosition(furniture, fallback.x, fallback.y), zIndex: state.placedFurniture.length + 1 }] },
+    game: { ...game, ...state, placedFurniture: [...state.placedFurniture, { instanceId: createInstanceId(furnitureId), furnitureId, ...placementPosition, rotation: Number(position?.rotation) || 0, zIndex: state.placedFurniture.length + 1 }] },
     ok: true,
   };
 };

@@ -6,6 +6,7 @@ import {
   ChevronRight,
   LockKeyhole,
   Package,
+  RotateCw,
   Sparkles,
   Store,
   Target,
@@ -24,6 +25,7 @@ import { FurnitureInventory } from './components/room/FurnitureInventory';
 import { playCompletionSound } from './utils/playCompletionSound';
 import { createGoalBgm } from './utils/createGoalBgm';
 import { getCompletedTaskIds } from './domain/tasks/taskPlan';
+import { getProductById, isProductImagePath } from './domain/shop/productCatalog';
 import companionRoom from './assets/rooms/companion-room.png';
 import companionCharacter from './assets/characters/ChatGPT Image 2026年8月15日 10_43_54 (1).png';
 
@@ -36,16 +38,31 @@ const getDayNumber = (startedOn) => {
 
 const STATUS_LABELS = { knowledge: '知力', wealth: '運', strength: '体力' };
 
-const Companion = ({ isComplete, progress, placedFurniture = [], onMoveFurniture, onRemoveFurniture }) => {
+const ROOM_GRID_SIZE = 32;
+
+const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPlacementMove, onMoveFurniture, onRemoveFurniture }) => {
   const roomRef = useRef(null);
+  const movePlacement = (event) => {
+    if (!placement || !roomRef.current) return;
+    const rect = roomRef.current.getBoundingClientRect();
+    const pointX = (event.clientX - rect.left) * (320 / rect.width);
+    const pointY = (event.clientY - rect.top) * (320 / rect.height);
+    const x = Math.min(Math.max(Math.round(pointX / ROOM_GRID_SIZE) * ROOM_GRID_SIZE, 0), 320 - placement.product.width);
+    const y = Math.min(Math.max(Math.round(pointY / ROOM_GRID_SIZE) * ROOM_GRID_SIZE, 0), 320 - placement.product.height);
+    onPlacementMove({ x, y });
+  };
   return (
   <div
     ref={roomRef}
+    onPointerDown={movePlacement}
     className="relative mx-auto mt-3 aspect-square w-full max-w-[330px] overflow-hidden"
     aria-label={isComplete ? '今日のクエストを達成したキャラクターの部屋' : 'キャラクターの部屋'}
   >
     <img src={companionRoom} alt="キャラクターの部屋" className="absolute inset-0 h-full w-full object-cover" />
     <RoomFurniture roomRef={roomRef} items={placedFurniture} onMove={onMoveFurniture} onRemove={onRemoveFurniture} />
+    {placement && <div className="pointer-events-none absolute border-2 border-dashed border-amber-300 bg-amber-300/20" style={{ left: `${(placement.x / 320) * 100}%`, top: `${(placement.y / 320) * 100}%`, width: `${(placement.product.width / 320) * 100}%`, height: `${(placement.product.height / 320) * 100}%`, transform: `rotate(${placement.rotation}deg)`, zIndex: 30 }}>
+      {isProductImagePath(placement.product.image) && <img src={placement.product.image} alt="" className="h-full w-full object-contain opacity-80" />}
+    </div>}
     <img
       src={companionCharacter}
       alt="部屋にいるキャラクター"
@@ -81,6 +98,7 @@ const Home = ({ openGoalSelector, onOpenShop }) => {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isBgmPlaying, setIsBgmPlaying] = useState(false);
   const [isFurnitureInventoryOpen, setIsFurnitureInventoryOpen] = useState(false);
+  const [furniturePlacement, setFurniturePlacement] = useState(null);
   const bgmPlayer = useRef(null);
 
   useEffect(() => () => bgmPlayer.current?.dispose(), []);
@@ -127,6 +145,19 @@ const Home = ({ openGoalSelector, onOpenShop }) => {
     setIsBgmPlaying(didStart);
   };
 
+  const startFurniturePlacement = (furnitureId) => {
+    const product = getProductById(furnitureId);
+    if (!product?.isFurniture) return { ok: false };
+    setFurniturePlacement({ product, x: 96, y: 160, rotation: 0 });
+    return { ok: true };
+  };
+
+  const confirmFurniturePlacement = () => {
+    if (!furniturePlacement) return;
+    const result = placeOwnedFurniture(furniturePlacement.product.id, furniturePlacement);
+    if (result.ok) setFurniturePlacement(null);
+  };
+
   return (
     <div className="min-h-[100dvh] overflow-x-hidden bg-[#10182b] text-slate-100">
       <main className="mx-auto w-full max-w-md px-5 pb-28 pt-5">
@@ -164,7 +195,7 @@ const Home = ({ openGoalSelector, onOpenShop }) => {
                 <Sparkles className="h-5 w-5 text-amber-300" />
               </div>
 
-              <Companion isComplete={isTodayComplete} progress={todayProgress} placedFurniture={game.placedFurniture} onMoveFurniture={movePlacedFurniture} onRemoveFurniture={removePlacedFurniture} />
+              <Companion isComplete={isTodayComplete} progress={todayProgress} placedFurniture={game.placedFurniture} placement={furniturePlacement} onPlacementMove={(position) => setFurniturePlacement((current) => current ? { ...current, ...position } : current)} onMoveFurniture={movePlacedFurniture} onRemoveFurniture={removePlacedFurniture} />
 
               <div className="relative mt-2">
                 <div className="flex items-center justify-between text-xs font-bold text-blue-100">
@@ -257,8 +288,13 @@ const Home = ({ openGoalSelector, onOpenShop }) => {
         onClose={() => setIsFurnitureInventoryOpen(false)}
         ownedFurniture={game.ownedFurniture}
         placedFurniture={game.placedFurniture}
-        onPlace={placeOwnedFurniture}
+        onPlace={startFurniturePlacement}
       />
+      {furniturePlacement && <div className="fixed bottom-5 left-1/2 z-[60] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center gap-2 rounded-2xl border border-white/15 bg-slate-900/95 p-2 shadow-2xl backdrop-blur">
+        <button type="button" onClick={() => setFurniturePlacement((current) => ({ ...current, rotation: (current.rotation + 90) % 360 }))} className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-amber-300" aria-label="家具を回転"><RotateCw className="h-5 w-5" /></button>
+        <button type="button" onClick={() => setFurniturePlacement(null)} className="rounded-xl px-3 py-3 text-xs font-black text-slate-200">キャンセル</button>
+        <button type="button" onClick={confirmFurniturePlacement} className="ml-auto rounded-xl bg-amber-300 px-5 py-3 text-xs font-black text-slate-950">OK</button>
+      </div>}
       <button onClick={onOpenShop} className="fixed bottom-6 left-6 z-40 flex items-center gap-2 rounded-full bg-amber-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/40 transition hover:scale-105 hover:bg-amber-200" aria-label="ショップを開く"><Store className="h-5 w-5" />SHOP</button>
       {isMemoOpen && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center">

@@ -51,7 +51,7 @@ export const RoomFurniture = ({ roomRef, items, onMove, onRemove }) => {
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         className={`absolute touch-none select-none ${isSelected ? 'ring-2 ring-amber-300 ring-offset-2 ring-offset-slate-900' : ''}`}
-        style={{ left: `${(item.x / ROOM_SIZE.width) * 100}%`, top: `${(item.y / ROOM_SIZE.height) * 100}%`, width: `${(product.width / ROOM_SIZE.width) * 100}%`, height: `${(product.height / ROOM_SIZE.height) * 100}%`, zIndex: item.zIndex }}
+        style={{ left: `${(item.x / ROOM_SIZE.width) * 100}%`, top: `${(item.y / ROOM_SIZE.height) * 100}%`, width: `${(product.width / ROOM_SIZE.width) * 100}%`, height: `${(product.height / ROOM_SIZE.height) * 100}%`, transform: `rotate(${Number(item.rotation) || 0}deg)`, zIndex: item.zIndex }}
       >
         {isProductImagePath(product.image) ? (
           <img src={product.image} alt={product.name} draggable={false} className="pointer-events-none block h-full w-full select-none object-contain drop-shadow-lg" />

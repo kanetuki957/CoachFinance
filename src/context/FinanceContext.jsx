@@ -391,9 +391,9 @@ export const FinanceProvider = ({ children }) => {
   };
 
   // 所持家具を部屋へ配置する窓口。
-  const placeOwnedFurniture = (furnitureId) => {
+  const placeOwnedFurniture = (furnitureId, position) => {
     // 購入数を超えて配置できないかの判定はドメイン層で行う。
-    const placement = placeFurniture(gameRef.current, furnitureId);
+    const placement = placeFurniture(gameRef.current, furnitureId, position);
     if (placement.ok) commitGame(placement.game);
     return placement;
   };
