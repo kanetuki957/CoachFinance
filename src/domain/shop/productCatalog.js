@@ -26,6 +26,8 @@ const poco = (id, name, category, price, image, description, tags, width, height
   description,
   tags,
   isFurniture: true, width, height,
+  // Grid data keeps placement responsive while preserving the existing pixel dimensions for legacy room rendering.
+  gridWidth: Math.max(1, Math.ceil(width / 32)), gridHeight: Math.max(1, Math.ceil(height / 32)),
 });
 
 export const PRODUCT_CATALOG = [

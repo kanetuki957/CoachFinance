@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { completeTaskInGoal, normalizeTaskPlan } from '../domain/tasks/taskPlan';
 import { applyTaskCompletionReward, normalizeGameState } from '../domain/game/gameProgress';
-import { placeFurniture, purchaseFurniture, removeFurniture, updateFurniturePosition } from '../domain/furniture/furnitureInventory';
+import { placeFurniture, purchaseFurniture, removeFurniture, updateFurniturePlacement, updateFurniturePosition } from '../domain/furniture/furnitureInventory';
 import { purchaseProduct } from '../domain/shop/productInventory';
 
 const GoalContext = createContext(null);
@@ -405,6 +405,12 @@ export const FinanceProvider = ({ children }) => {
     return movement.ok;
   };
 
+  const saveFurniturePlacement = (instanceId, placement) => {
+    const result = updateFurniturePlacement(gameRef.current, instanceId, placement);
+    if (result.ok) commitGame(result.game);
+    return result;
+  };
+
   // 部屋から家具を片付ける窓口。家具そのものは所持したままにする。
   const removePlacedFurniture = (instanceId) => {
     const removal = removeFurniture(gameRef.current, instanceId);
@@ -413,7 +419,7 @@ export const FinanceProvider = ({ children }) => {
   };
 
   return (
-    <GoalContext.Provider value={{ activeGoal, game, profile, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, placeOwnedFurniture, movePlacedFurniture, removePlacedFurniture }}>
+    <GoalContext.Provider value={{ activeGoal, game, profile, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture }}>
       {children}
     </GoalContext.Provider>
   );
