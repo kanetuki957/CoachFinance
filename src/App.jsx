@@ -41,28 +41,37 @@ const STATUS_LABELS = { knowledge: '知力', wealth: '運', strength: '体力' }
 
 const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPlacementMove, onEditFurniture }) => {
   const roomRef = useRef(null);
-  const pointerActive = useRef(false);
-  const movePlacement = (event) => {
-    if (!placement || !pointerActive.current || !roomRef.current) return;
+  const drag = useRef(null);
+  const pointInRoom = (event) => {
     const rect = roomRef.current.getBoundingClientRect();
-    const pointX = (event.clientX - rect.left) * (320 / rect.width);
-    const pointY = (event.clientY - rect.top) * (320 / rect.height);
+    return { x: (event.clientX - rect.left) * (320 / rect.width), y: (event.clientY - rect.top) * (320 / rect.height) };
+  };
+  const movePreview = (event) => {
+    if (!drag.current || !placement) return;
+    const point = pointInRoom(event);
     const footprint = getGridFootprint(placement.product, placement.orientation);
-    onPlacementMove({ gridX: Math.min(Math.max(Math.round(pointX / GRID_CELL_SIZE), 0), ROOM_GRID.columns - footprint.gridWidth), gridY: Math.min(Math.max(Math.round(pointY / GRID_CELL_SIZE), 0), ROOM_GRID.rows - footprint.gridHeight) });
+    onPlacementMove({ gridX: Math.min(Math.max(Math.round((point.x - drag.current.offsetX) / GRID_CELL_SIZE), 0), ROOM_GRID.columns - footprint.gridWidth), gridY: Math.min(Math.max(Math.round((point.y - drag.current.offsetY) / GRID_CELL_SIZE), 0), ROOM_GRID.rows - footprint.gridHeight) });
+  };
+  const startPreviewDrag = (event) => {
+    if (!placement) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    const point = pointInRoom(event);
+    drag.current = { offsetX: point.x - placement.gridX * GRID_CELL_SIZE, offsetY: point.y - placement.gridY * GRID_CELL_SIZE };
+  };
+  const endPreviewDrag = (event) => {
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    drag.current = null;
   };
   return (
   <div
     ref={roomRef}
-    onPointerDown={(event) => { if (placement) { pointerActive.current = true; event.currentTarget.setPointerCapture?.(event.pointerId); movePlacement(event); } }}
-    onPointerMove={movePlacement}
-    onPointerUp={() => { pointerActive.current = false; }}
-    onPointerCancel={() => { pointerActive.current = false; }}
-    className="relative mx-auto mt-3 aspect-square w-full max-w-[330px] overflow-hidden"
+    className="relative mx-auto mt-3 aspect-square w-full max-w-[330px] overflow-hidden touch-manipulation"
     aria-label={isComplete ? '今日のクエストを達成したキャラクターの部屋' : 'キャラクターの部屋'}
   >
     <img src={companionRoom} alt="キャラクターの部屋" className="absolute inset-0 h-full w-full object-cover" />
     <RoomFurniture items={placedFurniture} onEdit={onEditFurniture} disabled={Boolean(placement)} />
-    {placement && (() => { const footprint = getGridFootprint(placement.product, placement.orientation); const available = isFurniturePlacementAvailable(placedFurniture, placement.product.id, placement.gridX, placement.gridY, placement.orientation, placement.instanceId); return <div className={`pointer-events-none absolute border-2 border-dashed ${available ? 'border-emerald-300 bg-emerald-300/25' : 'border-rose-400 bg-rose-400/25'}`} style={{ left: `${(placement.gridX / ROOM_GRID.columns) * 100}%`, top: `${(placement.gridY / ROOM_GRID.rows) * 100}%`, width: `${(footprint.gridWidth / ROOM_GRID.columns) * 100}%`, height: `${(footprint.gridHeight / ROOM_GRID.rows) * 100}%`, zIndex: 30 }}>
+    {placement && (() => { const footprint = getGridFootprint(placement.product, placement.orientation); const available = isFurniturePlacementAvailable(placedFurniture, placement.product.id, placement.gridX, placement.gridY, placement.orientation, placement.instanceId); return <div onPointerDown={startPreviewDrag} onPointerMove={movePreview} onPointerUp={endPreviewDrag} onPointerCancel={endPreviewDrag} className={`absolute touch-none border-2 border-dashed ${available ? 'border-emerald-300 bg-emerald-300/25' : 'border-rose-400 bg-rose-400/25'}`} style={{ left: `${(placement.gridX / ROOM_GRID.columns) * 100}%`, top: `${(placement.gridY / ROOM_GRID.rows) * 100}%`, width: `${(footprint.gridWidth / ROOM_GRID.columns) * 100}%`, height: `${(footprint.gridHeight / ROOM_GRID.rows) * 100}%`, backgroundImage: 'linear-gradient(to right, rgba(255,255,255,.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.35) 1px, transparent 1px)', backgroundSize: `${100 / footprint.gridWidth}% ${100 / footprint.gridHeight}%`, zIndex: 30 }}>
       {isProductImagePath(footprint.image) && <img src={footprint.image} alt="" className="h-full w-full object-contain opacity-80" />}
     </div>}
     )()}
