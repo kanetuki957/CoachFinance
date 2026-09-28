@@ -9,6 +9,7 @@ export const POCO_CATEGORIES = [
   { id: 'rug', name: 'ラグ', image: '🧶', description: '足元から部屋を整える' },
   { id: 'bed', name: 'ベッド', image: '🛏️', description: '眠る時間を心地よく' },
   { id: 'tv', name: 'テレビ', image: '📺', description: '家族で楽しむ映像体験' },
+  { id: 'cushion', name: 'クッション', image: '🛋️', description: 'くつろぎの時間をつくる' }
 ];
 
 // 旧ショップの表示互換用。POCO HOME では POCO_CATEGORIES を使用します。
