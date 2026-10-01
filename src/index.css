@@ -8,6 +8,20 @@ body {
   background-color: #020617;
 }
 
+/* The home room is a free-standing scene, not a card inside another card. */
+main > section.relative.mt-4 {
+  overflow: visible;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+main > section.relative.mt-4 > .absolute:first-child {
+  display: none;
+}
+
 @keyframes companion-float {
   0%, 100% { transform: translateY(0) rotate(-1deg); }
   50% { transform: translateY(-8px) rotate(1deg); }
