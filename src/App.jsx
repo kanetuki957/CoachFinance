@@ -67,7 +67,7 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
   return (
   <div
     ref={roomRef}
-    className="relative mx-auto mt-3 aspect-square w-full max-w-[330px] overflow-hidden touch-manipulation"
+    className="room-scene relative mx-auto mt-3 aspect-square w-full max-w-[330px] overflow-hidden touch-manipulation"
     aria-label={isComplete ? '今日のクエストを達成したキャラクターの部屋' : 'キャラクターの部屋'}
   >
     <img src={companionRoom} alt="キャラクターの部屋" className="absolute inset-0 h-full w-full object-cover" />
