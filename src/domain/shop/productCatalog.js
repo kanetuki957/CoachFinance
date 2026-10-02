@@ -16,7 +16,12 @@ export const POCO_CATEGORIES = [
 // 旧ショップの表示互換用。POCO HOME では POCO_CATEGORIES を使用します。
 export const SHOP_CATEGORIES = POCO_CATEGORIES;
 
-const poco = (id, name, category, price, image, description, tags, width, height) => ({
+import { normalizeFurnitureSettings, resolveFurnitureSize } from '../room/furnitureSizing.js';
+
+const poco = (id, name, category, price, image, description, tags, settingsOrWidth, legacyHeight) => {
+  const settings = normalizeFurnitureSettings(settingsOrWidth, legacyHeight);
+  const displaySize = resolveFurnitureSize(settings);
+  return ({
   id,
   brand: 'poco',
   name,
@@ -27,11 +32,15 @@ const poco = (id, name, category, price, image, description, tags, width, height
   image: image?.startsWith('/') ? image : `/images/furniture/poco/${category}/${id}.png`,
   description,
   tags,
-  isFurniture: true, width, height,
-  placementType: 'floor',
+  isFurniture: true,
+  ...settings,
+  width: displaySize.width,
+  height: displaySize.height,
   // Grid data keeps placement responsive while preserving the existing pixel dimensions for legacy room rendering.
-  gridWidth: Math.max(1, Math.ceil(width / 32)), gridHeight: Math.max(1, Math.ceil(height / 32)),
+  gridWidth: settings.footprint.width,
+  gridHeight: settings.footprint.depth,
 });
+};
 
 export const PRODUCT_CATALOG = [
   // 既存ユーザーの保存済み商品を正規化時に失わないための旧カタログ互換データ。
@@ -55,45 +64,188 @@ export const PRODUCT_CATALOG = [
   { id: 'character_formal_01', name: 'フォーマル服', category: 'legacy', price: 1500, image: '👔', isFurniture: false },
   { id: 'character_hair_short_01', name: 'ショートヘア', category: 'legacy', price: 1200, image: '✂️', isFurniture: false },
   { id: 'character_hair_long_01', name: 'ロングヘア', category: 'legacy', price: 1200, image: '👩', isFurniture: false },
-  poco('poco_storage_001', 'リネン ボックスラック', 'storage', 350, '🗄️', '布の風合いがやさしい、見せても隠しても使える収納ラック。', ['new'], 72, 100),
-  poco('poco_storage_002', 'スリム ウッドシェルフ', 'storage', 600, '📚', '小さなスペースにも置きやすい、軽やかな木製シェルフ。', ['popular'], 70, 105),
-  poco('poco_storage_003', 'まるいバスケット', 'storage', 180, '🧺', 'ブランケットや小物を気軽にしまえる、毎日のかご。', ['recommended'], 52, 50),
 
-  poco('poco_sofa_001', 'くもり空 ソファ', 'sofa', 850, '🛋️', 'どんな部屋にも馴染む、ゆったり2人掛けソファ。', ['popular'], 125, 72),
-  poco('poco_sofa_002', 'ひとり時間チェア', 'sofa', 520, '💺', '読書にも休憩にもぴったりな、丸みのあるチェア。', ['new'], 65, 75),
-  poco('poco_sofa_003', 'ふかふかオットマン', 'sofa', 260, '🟫', 'ソファの相棒にも、来客用の椅子にもなる一台。', ['recommended'], 58, 42),
+  //POCOの商品：ここで商品を追加する/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  poco('poco_table_001', 'ナチュラル ダイニングテーブル', 'table-chair', 780, '🪵', '食事も作業も心地よく。明るい木目のコンパクトテーブル。', ['popular'], 112, 68),
-  poco('poco_table_002', 'ウッドサイドテーブル', 'table-chair', 300, '🪑', '飲み物や本をそっと置ける、部屋に馴染む小さなテーブル。', ['recommended'], 58, 54),
-  poco('poco_table_003', 'ナチュラルチェア', 'table-chair', 240, '🪑', '軽くて置きやすい、飽きのこない木製チェア。', ['new'], 56, 68),
+  poco('poco_storage_001', 'リネン ボックスラック', 'storage', 350, '🗄️', '布の風合いがやさしい、見せても隠しても使える収納ラック。', ['new'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_storage_002', 'スリム ウッドシェルフ', 'storage', 600, '📚', '小さなスペースにも置きやすい、軽やかな木製シェルフ。', ['popular'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_storage_003', 'まるいバスケット', 'storage', 180, '🧺', 'ブランケットや小物を気軽にしまえる、毎日のかご。', ['recommended'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
 
-  poco('poco_decor_001', '窓辺の観葉植物', 'decor', 120, '🪴', 'ひとつ置くだけで部屋の空気が変わる、育てやすいグリーン。', ['recommended', 'popular'], 25, 25),
-  poco('poco_decor_002', '陶器のフラワーベース', 'decor', 160, '🏺', '季節の花も枝ものも似合う、素朴な白い花器。', ['new'], 40, 56),
-  poco('poco_decor_003', 'アートブック スタック', 'decor', 140, '📖', '棚やテーブルの上を少し楽しくする、色の重なり。', ['recommended'], 48, 28),
+  poco('poco_sofa_001', 'くもり空 ソファ', 'sofa', 850, '🛋️', 'どんな部屋にも馴染む、ゆったり2人掛けソファ。', ['popular'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_sofa_002', 'ひとり時間チェア', 'sofa', 520, '💺', '読書にも休憩にもぴったりな、丸みのあるチェア。', ['new'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_sofa_003', 'ふかふかオットマン', 'sofa', 260, '🟫', 'ソファの相棒にも、来客用の椅子にもなる一台。', ['recommended'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
 
-  poco('poco_lighting_001', 'やわらかフロアランプ', 'lighting', 460, '💡', '夜の時間をあたためる、布シェードのフロアランプ。', ['popular'], 45, 88),
-  poco('poco_lighting_002', 'ミニテーブルライト', 'lighting', 220, '🔆', 'ベッドサイドにもデスクにも合う、小さな明かり。', ['new'], 38, 50),
-  poco('poco_lighting_003', 'ペンダントライト', 'lighting', 380, '💡', '食卓やリビングに、やさしい光を届けるペンダントライト。', ['recommended'], 50, 60),
+  poco('poco_table_001', 'ナチュラル ダイニングテーブル', 'table-chair', 780, '🪵', '食事も作業も心地よく。明るい木目のコンパクトテーブル。', ['popular'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 5, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_decor_002', '陶器のフラワーベース', 'decor', 160, '🏺', '季節の花も枝ものも似合う、素朴な白い花器。', ['new'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_decor_003', 'アートブック スタック', 'decor', 140, '📖', '棚やテーブルの上を少し楽しくする、色の重なり。', ['recommended'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
 
-  poco('poco_rug_001', 'チェックコットンラグ', 'rug', 420, '🧶', '足元をやわらかく彩る、洗えるコットンラグ。', ['popular'], 115, 55),
-  poco('poco_rug_002', 'まるい玄関マット', 'rug', 190, '⭕', '帰るたびに気分が少し上がる、丸いミニラグ。', ['recommended'], 62, 40),
-  poco('poco_rug_003', 'ウールラグ', 'rug', 600, '🧶', '冬の足元をあたためる、厚手のウールラグ。', ['new'], 120, 80),
+  poco('poco_lighting_001', 'やわらかフロアランプ', 'lighting', 460, '💡', '夜の時間をあたためる、布シェードのフロアランプ。', ['popular'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_lighting_002', 'ミニテーブルライト', 'lighting', 220, '🔆', 'ベッドサイドにもデスクにも合う、小さな明かり。', ['new'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_lighting_003', 'ペンダントライト', 'lighting', 380, '💡', '食卓やリビングに、やさしい光を届けるペンダントライト。', ['recommended'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
 
-  poco('poco_bed_001', 'ふかふかベッド', 'bed', 1200, '🛏', '心を落ち着ける、ふかふかの寝具。', ['popular'], 150, 100),
-  poco('poco_bed_002', 'シンプルベッド', 'bed', 1000, '🛏', 'すっきりとしたデザインで、どんな部屋にも馴染むベッド。', ['recommended'], 150, 100),
-  poco('poco_bed_003', 'ナチュラルベッド', 'bed', 1100, '🛏', '自然な素材で、心と体を癒すベッド。', ['new'], 150, 100),
+  poco('poco_rug_001', 'チェックコットンラグ', 'rug', 420, '🧶', '足元をやわらかく彩る、洗えるコットンラグ。', ['popular'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
 
-  poco('poco_TV_001', 'スマートテレビ５０型', 'tv', 1200, '📺', '家族で楽しめる、最新のスマートテレビ５０型。', ['popular'], 150, 100),
-  poco('poco_TV_002', 'スマートテレビ４０型', 'tv', 1000, '📺', 'コンパクトで使いやすい、最新のスマートテレビ４０型。', ['recommended'], 120, 80),
-  poco('poco_TV_003', 'スマートテレビ６０型', 'tv', 1500, '📺', '大画面で迫力のある、最新のスマートテレビ６０型。', ['new'], 180, 120),
+  poco('poco_TV_001', 'スマートテレビ５０型', 'tv', 1200, '📺', '家族で楽しめる、最新のスマートテレビ５０型。', ['popular'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_TV_002', 'スマートテレビ４０型', 'tv', 1000, '📺', 'コンパクトで使いやすい、最新のスマートテレビ４０型。', ['recommended'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_TV_003', 'スマートテレビ６０型', 'tv', 1500, '📺', '大画面で迫力のある、最新のスマートテレビ６０型。', ['new'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
 
-  poco('poco_cushion_001', 'やわらかクッション', 'cushion', 80, '🛋️', '座り心地の良い、やわらかいクッション。', ['new'], 50, 50),
-  poco('poco_cushion_002', 'ふかふかクッション', 'cushion', 120, '🛋️', 'より快適な座り心地を。', ['recommended'], 55, 55),
-  poco('poco_cushion_003', 'ふわふわクッション', 'cushion', 80, '🛋️', 'かわいげのあるデザインで、部屋を彩ります。', ['new'], 50, 50),
-  
-  poco('poco_openrack_001', 'オープンラック', 'openrack', 600, '🗄️', '見せる収納にぴったりな、シンプルなオープンラック。', ['recommended'], 72, 100),
-  poco('poco_openrack_002', 'オープンラック', 'openrack', 600, '🗄️', '見せる収納にぴったりな、シンプルなオープンラック。', ['recommended'], 72, 100),
-  poco('poco_openrack_003', 'オープンラック', 'openrack', 600, '🗄️', '見せる収納にぴったりな、シンプルなオープンラック。', ['recommended'], 72, 100),
+  poco('poco_cushion_001', 'やわらかクッション', 'cushion', 80, '🛋️', '座り心地の良い、やわらかいクッション。', ['new'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_cushion_002', 'ふかふかクッション', 'cushion', 120, '🛋️', 'より快適な座り心地を。', ['recommended'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_cushion_003', 'ふわふわクッション', 'cushion', 80, '🛋️', 'かわいげのあるデザインで、部屋を彩ります。', ['new'], {
+    size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+
+  poco('poco_openrack_001', 'オープンラック', 'openrack', 600, '🗄️', '見せる収納にぴったりな、シンプルなオープンラック。', ['recommended'], {
+   size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_openrack_003', 'オープンラック', 'openrack', 600, '🗄️', '見せる収納にぴったりな、シンプルなオープンラック。', ['recommended'], {
+   size: 'L',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+// ここまで////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
 ];
 
