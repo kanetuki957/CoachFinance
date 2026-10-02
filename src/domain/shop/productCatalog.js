@@ -67,7 +67,7 @@ export const PRODUCT_CATALOG = [
   poco('poco_table_002', 'ウッドサイドテーブル', 'table-chair', 300, '🪑', '飲み物や本をそっと置ける、部屋に馴染む小さなテーブル。', ['recommended'], 58, 54),
   poco('poco_table_003', 'ナチュラルチェア', 'table-chair', 240, '🪑', '軽くて置きやすい、飽きのこない木製チェア。', ['new'], 56, 68),
 
-  poco('poco_decor_001', '窓辺の観葉植物', 'decor', 120, '🪴', 'ひとつ置くだけで部屋の空気が変わる、育てやすいグリーン。', ['recommended', 'popular'], 52, 72),
+  poco('poco_decor_001', '窓辺の観葉植物', 'decor', 120, '🪴', 'ひとつ置くだけで部屋の空気が変わる、育てやすいグリーン。', ['recommended', 'popular'], 25, 25),
   poco('poco_decor_002', '陶器のフラワーベース', 'decor', 160, '🏺', '季節の花も枝ものも似合う、素朴な白い花器。', ['new'], 40, 56),
   poco('poco_decor_003', 'アートブック スタック', 'decor', 140, '📖', '棚やテーブルの上を少し楽しくする、色の重なり。', ['recommended'], 48, 28),
 

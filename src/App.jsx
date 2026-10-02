@@ -103,7 +103,7 @@ const SelectedGoal = ({ goal }) => (
 );
 
 const Home = ({ openGoalSelector, onOpenShop }) => {
-  const { activeGoal, completeTask, game, placeOwnedFurniture, saveFurniturePlacement, removePlacedFurniture } = useFinance();
+  const { activeGoal, completeTask, game, addDebugMoney, placeOwnedFurniture, saveFurniturePlacement, removePlacedFurniture } = useFinance();
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [memo, setMemo] = useState('');
@@ -296,6 +296,7 @@ const Home = ({ openGoalSelector, onOpenShop }) => {
       </main>
 
       <TransactionForm openOnMount={openGoalSelector} />
+      {import.meta.env.DEV && <button type="button" onClick={() => addDebugMoney(1000)} className="fixed right-4 top-4 z-40 rounded-lg border border-fuchsia-300/50 bg-fuchsia-500/20 px-3 py-2 text-xs font-black text-fuchsia-100 backdrop-blur" aria-label="デバッグ用に1000コインを追加">DEBUG +1,000</button>}
       {activeGoal && <button type="button" onClick={() => setIsFurnitureInventoryOpen(true)} className="fixed bottom-[4.75rem] left-6 z-40 flex items-center gap-2 rounded-full bg-slate-100 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-white" aria-label="家具インベントリを開く"><Package className="h-5 w-5" />家具</button>}
       <FurnitureInventory
         open={isFurnitureInventoryOpen}

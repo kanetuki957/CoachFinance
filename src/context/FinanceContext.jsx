@@ -390,6 +390,12 @@ export const FinanceProvider = ({ children }) => {
     commitGame({ ...gameRef.current, favoriteProductIds });
   };
 
+  // 開発中の購入・配置確認専用。本番UIからは公開しない。
+  const addDebugMoney = (amount = 1000) => {
+    const money = Math.max(0, Number(gameRef.current.money) || 0) + amount;
+    commitGame({ ...gameRef.current, money });
+  };
+
   // 所持家具を部屋へ配置する窓口。
   const placeOwnedFurniture = (furnitureId, position) => {
     // 購入数を超えて配置できないかの判定はドメイン層で行う。
@@ -419,7 +425,7 @@ export const FinanceProvider = ({ children }) => {
   };
 
   return (
-    <GoalContext.Provider value={{ activeGoal, game, profile, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture }}>
+    <GoalContext.Provider value={{ activeGoal, game, profile, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, addDebugMoney, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture }}>
       {children}
     </GoalContext.Provider>
   );
