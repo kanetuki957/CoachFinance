@@ -26,7 +26,8 @@ import { playCompletionSound } from './utils/playCompletionSound';
 import { createGoalBgm } from './utils/createGoalBgm';
 import { getCompletedTaskIds } from './domain/tasks/taskPlan';
 import { getProductById, isProductImagePath } from './domain/shop/productCatalog';
-import { getFurnitureOrientations, getGridFootprint, GRID_CELL_SIZE, isFurniturePlacementAvailable, ROOM_GRID } from './domain/furniture/furnitureInventory';
+import { getFurnitureOrientations, getGridFootprint, GRID_CELL_SIZE, isFurniturePlacementAvailable, isFurniturePlacementInAllowedZone, ROOM_GRID } from './domain/furniture/furnitureInventory';
+import { getPlacementZonePolygons } from './domain/room/placementZones';
 import companionRoom from './assets/rooms/companion-room.png';
 import companionCharacter from './assets/characters/ChatGPT Image 2026年8月15日 10_43_54 (1).png';
 
@@ -71,9 +72,9 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
   >
     <img src={companionRoom} alt="キャラクターの部屋" className="absolute inset-0 h-full w-full object-cover" />
     <RoomFurniture items={placedFurniture} onEdit={onEditFurniture} disabled={Boolean(placement)} />
-    {placement && (() => { const footprint = getGridFootprint(placement.product, placement.orientation); const available = isFurniturePlacementAvailable(placedFurniture, placement.product.id, placement.gridX, placement.gridY, placement.orientation, placement.instanceId); return <div onPointerDown={startPreviewDrag} onPointerMove={movePreview} onPointerUp={endPreviewDrag} onPointerCancel={endPreviewDrag} className={`absolute touch-none border-2 border-dashed ${available ? 'border-emerald-300 bg-emerald-300/25' : 'border-rose-400 bg-rose-400/25'}`} style={{ left: `${(placement.gridX / ROOM_GRID.columns) * 100}%`, top: `${(placement.gridY / ROOM_GRID.rows) * 100}%`, width: `${(footprint.gridWidth / ROOM_GRID.columns) * 100}%`, height: `${(footprint.gridHeight / ROOM_GRID.rows) * 100}%`, backgroundImage: 'linear-gradient(to right, rgba(255,255,255,.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.35) 1px, transparent 1px)', backgroundSize: `${100 / footprint.gridWidth}% ${100 / footprint.gridHeight}%`, zIndex: 30 }}>
+    {placement && (() => { const footprint = getGridFootprint(placement.product, placement.orientation); const available = isFurniturePlacementAvailable(placedFurniture, placement.product.id, placement.gridX, placement.gridY, placement.orientation, placement.instanceId) && isFurniturePlacementInAllowedZone(placement.product.id, placement.gridX, placement.gridY, placement.orientation); const polygons = getPlacementZonePolygons(placement.product); return <><svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 20 }}>{polygons.map((polygon, index) => <polygon key={index} points={polygon.map((point) => `${point.x * 100},${point.y * 100}`).join(' ')} fill="rgba(251,191,36,.14)" stroke="rgba(251,191,36,.42)" strokeWidth="0.5" />)}</svg><div onPointerDown={startPreviewDrag} onPointerMove={movePreview} onPointerUp={endPreviewDrag} onPointerCancel={endPreviewDrag} className={`absolute touch-none border-2 border-dashed ${available ? 'border-emerald-300 bg-emerald-300/25' : 'border-rose-400 bg-rose-400/25'}`} style={{ left: `${(placement.gridX / ROOM_GRID.columns) * 100}%`, top: `${(placement.gridY / ROOM_GRID.rows) * 100}%`, width: `${(footprint.gridWidth / ROOM_GRID.columns) * 100}%`, height: `${(footprint.gridHeight / ROOM_GRID.rows) * 100}%`, backgroundImage: 'linear-gradient(to right, rgba(255,255,255,.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.35) 1px, transparent 1px)', backgroundSize: `${100 / footprint.gridWidth}% ${100 / footprint.gridHeight}%`, zIndex: 30 }}>
       {isProductImagePath(footprint.image) && <img src={footprint.image} alt="" className="h-full w-full object-contain opacity-80" />}
-    </div>}
+    </div></>}
     )()}
     <img
       src={companionCharacter}
@@ -305,7 +306,7 @@ const Home = ({ openGoalSelector, onOpenShop }) => {
       />
       {furniturePlacement && (() => {
         const orientations = getFurnitureOrientations(furniturePlacement.product);
-        const available = isFurniturePlacementAvailable(game.placedFurniture, furniturePlacement.product.id, furniturePlacement.gridX, furniturePlacement.gridY, furniturePlacement.orientation, furniturePlacement.instanceId);
+        const available = isFurniturePlacementAvailable(game.placedFurniture, furniturePlacement.product.id, furniturePlacement.gridX, furniturePlacement.gridY, furniturePlacement.orientation, furniturePlacement.instanceId) && isFurniturePlacementInAllowedZone(furniturePlacement.product.id, furniturePlacement.gridX, furniturePlacement.gridY, furniturePlacement.orientation);
         const rotate = () => setFurniturePlacement((current) => {
           const list = getFurnitureOrientations(current.product);
           const index = list.findIndex((item) => item.id === current.orientation);

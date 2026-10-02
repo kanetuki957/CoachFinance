@@ -1,4 +1,5 @@
 import { FURNITURE_DEFAULT_POSITIONS, getFurnitureById } from './furnitureCatalog.js';
+import { isPlacementAnchorAllowed } from '../room/placementZones.js';
 
 export const ROOM_SIZE = { width: 320, height: 320 };
 export const GRID_CELL_SIZE = 32;
@@ -56,6 +57,13 @@ export const isFurniturePlacementAvailable = (items, furnitureId, gridX, gridY, 
   });
 };
 
+export const isFurniturePlacementInAllowedZone = (furnitureId, gridX, gridY, orientation) => {
+  const product = getFurnitureById(furnitureId);
+  if (!product) return false;
+  const footprint = getGridFootprint(product, orientation);
+  return isPlacementAnchorAllowed({ product, gridX, gridY, ...footprint, columns: ROOM_GRID.columns, rows: ROOM_GRID.rows });
+};
+
 export const purchaseFurniture = (game, furnitureId) => {
   const product = getFurnitureById(furnitureId); const state = normalizeFurnitureState(game);
   if (!product) return { game, result: { ok: false, reason: 'not-found' } };
@@ -69,12 +77,12 @@ export const placeFurniture = (game, furnitureId, placement = {}) => {
   const state = normalizeFurnitureState(game); const product = getFurnitureById(furnitureId);
   if (!product || state.placedFurniture.filter((item) => item.furnitureId === furnitureId).length >= getOwnedFurnitureQuantity(state.ownedFurniture, furnitureId)) return { game, ok: false, reason: 'not-available' };
   let item = normalizePlacement(product, { ...placement, instanceId: createInstanceId(furnitureId), placedAt: Date.now() }, state.placedFurniture.length);
-  if (!isFurniturePlacementAvailable(state.placedFurniture, furnitureId, item.gridX, item.gridY, item.orientation)) {
+  if (!isFurniturePlacementAvailable(state.placedFurniture, furnitureId, item.gridX, item.gridY, item.orientation) || !isFurniturePlacementInAllowedZone(furnitureId, item.gridX, item.gridY, item.orientation)) {
     // The legacy shop's "place now" action has no chosen grid. Find a free cell instead of failing silently.
     if (placement.gridX !== undefined || placement.gridY !== undefined) return { game, ok: false, reason: 'occupied' };
     const footprint = getGridFootprint(product, item.orientation);
     let alternative = null;
-    for (let y = 0; y <= ROOM_GRID.rows - footprint.gridHeight && !alternative; y += 1) for (let x = 0; x <= ROOM_GRID.columns - footprint.gridWidth; x += 1) if (isFurniturePlacementAvailable(state.placedFurniture, furnitureId, x, y, item.orientation)) { alternative = { x, y }; break; }
+    for (let y = 0; y <= ROOM_GRID.rows - footprint.gridHeight && !alternative; y += 1) for (let x = 0; x <= ROOM_GRID.columns - footprint.gridWidth; x += 1) if (isFurniturePlacementAvailable(state.placedFurniture, furnitureId, x, y, item.orientation) && isFurniturePlacementInAllowedZone(furnitureId, x, y, item.orientation)) { alternative = { x, y }; break; }
     if (!alternative) return { game, ok: false, reason: 'occupied' };
     item = normalizePlacement(product, { ...item, gridX: alternative.x, gridY: alternative.y }, state.placedFurniture.length);
   }
@@ -85,7 +93,7 @@ export const updateFurniturePlacement = (game, instanceId, placement) => {
   const state = normalizeFurnitureState(game); const current = state.placedFurniture.find((item) => item.instanceId === instanceId); const product = current && getFurnitureById(current.furnitureId);
   if (!current || !product) return { game, ok: false, reason: 'not-found' };
   const item = normalizePlacement(product, { ...current, ...placement, placedAt: Date.now() }, 0);
-  if (!isFurniturePlacementAvailable(state.placedFurniture, product.id, item.gridX, item.gridY, item.orientation, instanceId)) return { game, ok: false, reason: 'occupied' };
+  if (!isFurniturePlacementAvailable(state.placedFurniture, product.id, item.gridX, item.gridY, item.orientation, instanceId) || !isFurniturePlacementInAllowedZone(product.id, item.gridX, item.gridY, item.orientation)) return { game, ok: false, reason: 'invalid-placement' };
   return { game: { ...game, ...state, placedFurniture: state.placedFurniture.map((entry) => entry.instanceId === instanceId ? { ...item, zIndex: state.placedFurniture.length + 1 } : entry) }, ok: true };
 };
 export const updateFurniturePosition = (game, id, x, y) => updateFurniturePlacement(game, id, { gridX: Math.round(x / GRID_CELL_SIZE), gridY: Math.round(y / GRID_CELL_SIZE) });
