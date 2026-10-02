@@ -311,7 +311,7 @@ const Home = ({ openGoalSelector, onOpenShop }) => {
           const index = list.findIndex((item) => item.id === current.orientation);
           return { ...current, orientation: list[(index + 1) % list.length].id };
         });
-        return <div className="fixed bottom-5 left-1/2 z-[60] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center gap-2 rounded-2xl border border-white/15 bg-slate-900/95 p-2 shadow-2xl backdrop-blur">
+        return <div className="room-placement-actions fixed bottom-5 left-1/2 z-[60] flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center gap-2 rounded-2xl border border-white/15 bg-slate-900/95 p-2 shadow-2xl backdrop-blur">
           {orientations.length > 1 && <button type="button" onClick={rotate} className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-amber-300" aria-label="向き変更"><RotateCw className="h-5 w-5" /></button>}
           <button type="button" onClick={() => furniturePlacement.instanceId ? removePlacedFurniture(furniturePlacement.instanceId) && setFurniturePlacement(null) : setFurniturePlacement(null)} className="rounded-xl px-3 py-3 text-xs font-black text-slate-200">{furniturePlacement.instanceId ? '収納' : 'キャンセル'}</button>
           <button type="button" disabled={!available} onClick={confirmFurniturePlacement} className="ml-auto rounded-xl bg-amber-300 px-5 py-3 text-xs font-black text-slate-950 disabled:bg-slate-600 disabled:text-slate-300">OK</button>

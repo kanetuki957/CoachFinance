@@ -22,6 +22,25 @@ main > section.relative.mt-4 > .absolute:first-child {
   display: none;
 }
 
+/* The existing storage action removes only the selected instance; present it as the requested close/store control. */
+.room-placement-actions > button[class*="px-3"] {
+  position: relative;
+  min-width: 2.75rem;
+  background: rgba(251, 113, 133, .16);
+  color: transparent;
+}
+
+.room-placement-actions > button[class*="px-3"]::after {
+  content: '×';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fb7185;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
 @keyframes companion-float {
   0%, 100% { transform: translateY(0) rotate(-1deg); }
   50% { transform: translateY(-8px) rotate(1deg); }
