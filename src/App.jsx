@@ -42,6 +42,10 @@ const getDayNumber = (startedOn) => {
 
 const STATUS_LABELS = { knowledge: '知力', wealth: '運', strength: '体力' };
 
+// Render-only lift for an actively positioned floor furniture item.
+// Adjust this single value to change the apparent height above the floor.
+const FURNITURE_FLOAT_OFFSET = 50;
+
 const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPlacementMove, onEditFurniture }) => {
   const roomRef = useRef(null);
   const drag = useRef(null);
@@ -73,7 +77,7 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
     aria-label={isComplete ? '今日のクエストを達成したキャラクターの部屋' : 'キャラクターの部屋'}
   >
     <img src={companionRoom} alt="キャラクターの部屋" className="absolute inset-0 h-full w-full object-cover" />
-    <RoomFurniture items={placedFurniture} onEdit={onEditFurniture} disabled={Boolean(placement)} />
+      <RoomFurniture items={placement?.instanceId ? placedFurniture.filter((item) => item.instanceId !== placement.instanceId) : placedFurniture} onEdit={onEditFurniture} disabled={Boolean(placement)} />
     {placement && (() => {
       const footprint = getGridFootprint(placement.product, placement.orientation);
       const displaySize = resolveFurnitureSize(placement.product);
@@ -81,12 +85,15 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
       const footprintMarkers = getPlacementType(placement.product) === 'floor'
         ? getFootprintMarkerPolygons({ gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, columns: ROOM_GRID.columns, rows: ROOM_GRID.rows })
         : [];
+        const shouldFloat = getPlacementType(placement.product) === 'floor';
       return <>
         <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 25 }}>
-          {footprintMarkers.map((points, index) => <polygon key={index} points={points} fill={available ? 'rgba(250,204,21,.42)' : 'rgba(251,113,133,.40)'} stroke={available ? 'rgba(255,255,255,.72)' : 'rgba(251,113,133,.85)'} strokeWidth="0.35" />)}
+          {footprintMarkers.map((points, index) => <polygon key={index} points={points} fill={available ? 'rgba(125,211,252,.32)' : 'rgba(251,113,133,.40)'} stroke={available ? 'rgba(186,230,253,.60)' : 'rgba(251,113,133,.85)'} strokeWidth="0.35" />)}
         </svg>
         <div onPointerDown={startPreviewDrag} onPointerMove={movePreview} onPointerUp={endPreviewDrag} onPointerCancel={endPreviewDrag} className="absolute touch-none" style={{ left: `${(placement.gridX / ROOM_GRID.columns) * 100}%`, top: `${(placement.gridY / ROOM_GRID.rows) * 100}%`, width: `${(displaySize.width / 320) * 100}%`, height: `${(displaySize.height / 320) * 100}%`, zIndex: 30 }}>
-      {isProductImagePath(footprint.image) && <img src={footprint.image} alt="" className="h-full w-full object-contain opacity-80" />}
+        <div className="h-full w-full transition-transform duration-150 ease-out" style={{ transform: shouldFloat ? `translateY(-${FURNITURE_FLOAT_OFFSET}px)` : undefined }}>
+          {isProductImagePath(footprint.image) && <img src={footprint.image} alt="" className="h-full w-full object-contain opacity-80" />}
+        </div>
     </div></>}
     )()}
     <img
