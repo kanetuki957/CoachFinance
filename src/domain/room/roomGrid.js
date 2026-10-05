@@ -20,10 +20,12 @@ export const getFootprintMarkerPolygons = ({ gridX, gridY, gridWidth, gridHeight
   return Array.from({ length: gridWidth * gridHeight }, (_, index) => {
     const offsetX = index % gridWidth;
     const offsetY = Math.floor(index / gridWidth);
-    const centerX = (gridX + offsetX + 0.5) * cellWidth;
-    const centerY = (gridY + offsetY + 1) * cellHeight;
     const halfWidth = markerWidth / 2;
     const halfHeight = markerHeight / 2;
+    // Each footprint width step goes down-right; each depth step goes
+    // down-left. This keeps the marker group in the room's isometric plane.
+    const centerX = (gridX + 0.5) * cellWidth + (offsetX - offsetY) * halfWidth;
+    const centerY = (gridY + 1) * cellHeight + (offsetX + offsetY) * halfHeight;
     return toPointString([
       { x: centerX, y: centerY - halfHeight },
       { x: centerX + halfWidth, y: centerY },
