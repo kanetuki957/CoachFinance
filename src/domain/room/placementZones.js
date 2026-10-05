@@ -43,3 +43,21 @@ export const isPlacementAnchorAllowed = ({ product, gridX, gridY, gridWidth, gri
   const point = { x: (gridX + gridWidth * anchor.x) / columns, y: (gridY + gridHeight * anchor.y) / rows };
   return getPlacementZonePolygons(product).some((polygon) => isPointInPolygon(point, polygon));
 };
+
+// Floor furniture is valid only when every occupied footprint cell stays on
+// the floor. Wall furniture have no floor footprint, so they keep anchor-based
+// validation against their wall polygon.
+export const isPlacementFootprintAllowed = ({ product, gridX, gridY, gridWidth, gridHeight, columns, rows }) => {
+  if (getPlacementType(product) !== 'floor') {
+    return isPlacementAnchorAllowed({ product, gridX, gridY, gridWidth, gridHeight, columns, rows });
+  }
+
+  return Array.from({ length: gridWidth * gridHeight }, (_, index) => {
+    const offsetX = index % gridWidth;
+    const offsetY = Math.floor(index / gridWidth);
+    return isPointInPolygon({
+      x: (gridX + offsetX + 0.5) / columns,
+      y: (gridY + offsetY + 1) / rows,
+    }, ROOM_PLACEMENT_ZONES.floor);
+  }).every(Boolean);
+};

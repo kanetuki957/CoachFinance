@@ -69,7 +69,7 @@ export const PRODUCT_CATALOG = [
 
   // ここから収納の追加商品
   poco('poco_storage_001', 'リネン ボックスラック', 'storage', 350, '🗄️', '布の風合いがやさしい、見せても隠しても使える収納ラック。', ['new'], {
-    size: 'L',
+    size: '',
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
@@ -85,10 +85,10 @@ export const PRODUCT_CATALOG = [
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
   poco('poco_storage_003', 'まるいバスケット', 'storage', 180, '🧺', 'ブランケットや小物を気軽にしまえる、毎日のかご。', ['recommended'], {
-    size: 'L',
+    size: 'M',
     scale: 1,
-    aspectRatio: 125 / 72,
-    footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    aspectRatio: 125 / 72, // 旧カタログ互換のため、サイズは M に固定
+    footprint: { width: 0.8, depth: 0.8},    // 配置時に占めるグリッド数（横幅・奥行き）
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),

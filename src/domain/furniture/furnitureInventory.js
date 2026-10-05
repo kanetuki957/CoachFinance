@@ -1,5 +1,5 @@
 import { FURNITURE_DEFAULT_POSITIONS, getFurnitureById } from './furnitureCatalog.js';
-import { isPlacementAnchorAllowed } from '../room/placementZones.js';
+import { isPlacementFootprintAllowed } from '../room/placementZones.js';
 
 export const ROOM_SIZE = { width: 320, height: 320 };
 export const GRID_CELL_SIZE = 32;
@@ -61,7 +61,7 @@ export const isFurniturePlacementInAllowedZone = (furnitureId, gridX, gridY, ori
   const product = getFurnitureById(furnitureId);
   if (!product) return false;
   const footprint = getGridFootprint(product, orientation);
-  return isPlacementAnchorAllowed({ product, gridX, gridY, ...footprint, columns: ROOM_GRID.columns, rows: ROOM_GRID.rows });
+  return isPlacementFootprintAllowed({ product, gridX, gridY, ...footprint, columns: ROOM_GRID.columns, rows: ROOM_GRID.rows });
 };
 
 export const purchaseFurniture = (game, furnitureId) => {

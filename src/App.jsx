@@ -27,7 +27,8 @@ import { createGoalBgm } from './utils/createGoalBgm';
 import { getCompletedTaskIds } from './domain/tasks/taskPlan';
 import { getProductById, isProductImagePath } from './domain/shop/productCatalog';
 import { getFurnitureOrientations, getGridFootprint, GRID_CELL_SIZE, isFurniturePlacementAvailable, isFurniturePlacementInAllowedZone, ROOM_GRID } from './domain/furniture/furnitureInventory';
-import { getPlacementZonePolygons } from './domain/room/placementZones';
+import { getPlacementType } from './domain/room/placementZones';
+import { getFootprintMarkerPolygons } from './domain/room/roomGrid';
 import { resolveFurnitureSize } from './domain/room/furnitureSizing';
 import companionRoom from './assets/rooms/companion-room.png';
 import companionCharacter from './assets/characters/ChatGPT Image 2026年8月15日 10_43_54 (1).png';
@@ -73,7 +74,18 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
   >
     <img src={companionRoom} alt="キャラクターの部屋" className="absolute inset-0 h-full w-full object-cover" />
     <RoomFurniture items={placedFurniture} onEdit={onEditFurniture} disabled={Boolean(placement)} />
-    {placement && (() => { const footprint = getGridFootprint(placement.product, placement.orientation); const displaySize = resolveFurnitureSize(placement.product); const available = isFurniturePlacementAvailable(placedFurniture, placement.product.id, placement.gridX, placement.gridY, placement.orientation, placement.instanceId) && isFurniturePlacementInAllowedZone(placement.product.id, placement.gridX, placement.gridY, placement.orientation); const polygons = getPlacementZonePolygons(placement.product); return <><svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 20 }}>{polygons.map((polygon, index) => <polygon key={index} points={polygon.map((point) => `${point.x * 100},${point.y * 100}`).join(' ')} fill="rgba(251,191,36,.14)" stroke="rgba(251,191,36,.42)" strokeWidth="0.5" />)}</svg><div onPointerDown={startPreviewDrag} onPointerMove={movePreview} onPointerUp={endPreviewDrag} onPointerCancel={endPreviewDrag} className={`absolute touch-none border-2 border-dashed ${available ? 'border-emerald-300 bg-emerald-300/25' : 'border-rose-400 bg-rose-400/25'}`} style={{ left: `${(placement.gridX / ROOM_GRID.columns) * 100}%`, top: `${(placement.gridY / ROOM_GRID.rows) * 100}%`, width: `${(displaySize.width / 320) * 100}%`, height: `${(displaySize.height / 320) * 100}%`, backgroundImage: 'linear-gradient(to right, rgba(255,255,255,.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.35) 1px, transparent 1px)', backgroundSize: `${100 / footprint.gridWidth}% ${100 / footprint.gridHeight}%`, zIndex: 30 }}>
+    {placement && (() => {
+      const footprint = getGridFootprint(placement.product, placement.orientation);
+      const displaySize = resolveFurnitureSize(placement.product);
+      const available = isFurniturePlacementAvailable(placedFurniture, placement.product.id, placement.gridX, placement.gridY, placement.orientation, placement.instanceId) && isFurniturePlacementInAllowedZone(placement.product.id, placement.gridX, placement.gridY, placement.orientation);
+      const footprintMarkers = getPlacementType(placement.product) === 'floor'
+        ? getFootprintMarkerPolygons({ gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, columns: ROOM_GRID.columns, rows: ROOM_GRID.rows })
+        : [];
+      return <>
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 25 }}>
+          {footprintMarkers.map((points, index) => <polygon key={index} points={points} fill={available ? 'rgba(250,204,21,.42)' : 'rgba(251,113,133,.40)'} stroke={available ? 'rgba(255,255,255,.72)' : 'rgba(251,113,133,.85)'} strokeWidth="0.35" />)}
+        </svg>
+        <div onPointerDown={startPreviewDrag} onPointerMove={movePreview} onPointerUp={endPreviewDrag} onPointerCancel={endPreviewDrag} className="absolute touch-none" style={{ left: `${(placement.gridX / ROOM_GRID.columns) * 100}%`, top: `${(placement.gridY / ROOM_GRID.rows) * 100}%`, width: `${(displaySize.width / 320) * 100}%`, height: `${(displaySize.height / 320) * 100}%`, zIndex: 30 }}>
       {isProductImagePath(footprint.image) && <img src={footprint.image} alt="" className="h-full w-full object-contain opacity-80" />}
     </div></>}
     )()}
