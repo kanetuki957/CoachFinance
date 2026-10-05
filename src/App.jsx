@@ -44,7 +44,7 @@ const STATUS_LABELS = { knowledge: '知力', wealth: '運', strength: '体力' }
 
 // Render-only lift for an actively positioned floor furniture item.
 // Adjust this single value to change the apparent height above the floor.
-const FURNITURE_FLOAT_OFFSET = 50;
+const FURNITURE_FLOAT_OFFSET = 45;
 
 const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPlacementMove, onEditFurniture }) => {
   const roomRef = useRef(null);
