@@ -44,7 +44,9 @@ const STATUS_LABELS = { knowledge: '知力', wealth: '運', strength: '体力' }
 
 // Render-only lift for an actively positioned floor furniture item.
 // Adjust this single value to change the apparent height above the floor.
-const FURNITURE_FLOAT_OFFSET = 45;
+
+
+const FURNITURE_FLOAT_OFFSET = 45;  //家具画像の浮く高さ調整
 
 const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPlacementMove, onEditFurniture }) => {
   const roomRef = useRef(null);
@@ -83,7 +85,7 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
       const displaySize = resolveFurnitureSize(placement.product);
       const available = isFurniturePlacementAvailable(placedFurniture, placement.product.id, placement.gridX, placement.gridY, placement.orientation, placement.instanceId) && isFurniturePlacementInAllowedZone(placement.product.id, placement.gridX, placement.gridY, placement.orientation);
       const footprintMarkers = getPlacementType(placement.product) === 'floor'
-        ? getFootprintMarkerPolygons({ gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, columns: ROOM_GRID.columns, rows: ROOM_GRID.rows })
+        ? getFootprintMarkerPolygons({ gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, columns: ROOM_GRID.columns, rows: ROOM_GRID.rows, footprintOffset: placement.product.footprintOffset })
         : [];
         const shouldFloat = getPlacementType(placement.product) === 'floor';
       return <>

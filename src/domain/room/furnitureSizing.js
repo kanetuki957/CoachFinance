@@ -11,6 +11,8 @@ export const DEFAULT_FURNITURE_SETTINGS = {
   size: 'M',                          // 基本サイズ（XS / S / M / L / XL / XXL）
   scale: 1,                           // 基本サイズに対する拡大・縮小率
   footprint: { width: 1, depth: 1 },  // 配置時に占めるグリッド数（横幅・奥行き）
+  // Visual-only adjustment for the footprint marker in screen percentage units.
+  footprintOffset: { x: 0, y: 0 },
   placementType: 'floor',             // 配置場所の種類（floor: 床、wall: 壁）
   placementAnchor: { x: 0.5, y: 1 },  // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
 };
@@ -30,6 +32,7 @@ export const normalizeFurnitureSettings = (settings, legacyWidth, legacyHeight) 
       ...DEFAULT_FURNITURE_SETTINGS,
       ...settings,
       footprint: { ...DEFAULT_FURNITURE_SETTINGS.footprint, ...settings.footprint },
+      footprintOffset: { ...DEFAULT_FURNITURE_SETTINGS.footprintOffset, ...settings.footprintOffset },
       placementAnchor: { ...DEFAULT_FURNITURE_SETTINGS.placementAnchor, ...settings.placementAnchor },
     };
   }

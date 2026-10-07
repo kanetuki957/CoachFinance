@@ -73,6 +73,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: -2, // 左へ
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -81,6 +85,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: -2, // 左へ
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -89,6 +97,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72, // 旧カタログ互換のため、サイズは M に固定
     footprint: { width: 2, depth: 1},    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: -2, // 左へ
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -99,6 +111,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 4},    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 13, // 左へ
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -107,6 +123,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 13, // 左へ
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -115,6 +135,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 13, // 左へ
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
