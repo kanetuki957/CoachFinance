@@ -150,6 +150,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: 1, // 左右
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -158,6 +162,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: 1, // 左右
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -166,6 +174,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 1, // 左右
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -175,7 +187,11 @@ export const PRODUCT_CATALOG = [
     size: 'M',
     scale: 1,
     aspectRatio: 125 / 72,
-    footprint: { width: 2, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprint: { width: 2, depth: 3 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 8, // 左右
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -183,7 +199,11 @@ export const PRODUCT_CATALOG = [
     size: 'M',
     scale: 1,
     aspectRatio: 125 / 72,
-    footprint: { width: 2, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
+   footprint: { width: 2, depth: 3 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 8, // 左右
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -191,7 +211,11 @@ export const PRODUCT_CATALOG = [
     size: 'M',
     scale: 1,
     aspectRatio: 125 / 72,
-    footprint: { width: 2, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
+   footprint: { width: 2, depth: 3 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 8, // 左右
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -202,6 +226,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 1, // 左右
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -210,6 +238,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 1, // 左右
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -218,6 +250,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 1, // 左右
+      y: -1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -228,6 +264,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 5, // 左右
+      y: 5,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -236,6 +276,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: 5, // 左右
+      y: 5,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -244,16 +288,60 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: 5, // 左右
+      y: 5,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
-  
+  poco('poco_Slighting_001', 'やわらかフロアランプ', 'lighting', 460, '💡', '夜の時間をあたためる、布シェードのフロアランプ。', ['popular'], {
+    size: 'XS',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: -3, // 左右
+      y: -3,  // 上下
+    },
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_Slighting_002', 'ミニテーブルライト', 'lighting', 220, '🔆', 'ベッドサイドにもデスクにも合う、小さな明かり。', ['new'], {
+    size: 'XS',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: -3, // 左右
+      y: -3,  // 上下
+    },
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+  poco('poco_Slighting_003', 'ペンダントライト', 'lighting', 380, '💡', '食卓やリビングに、やさしい光を届けるペンダントライト。', ['recommended'], {
+    size: 'XS',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: -3, // 左右
+      y: -3,  // 上下
+    },
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+
   // ここからラグの追加商品
   poco('poco_rug_001', 'チェックコットンラグ', 'rug', 420, '🧶', '足元をやわらかく彩る、洗えるコットンラグ。', ['popular'], {
     size: 'M',
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 3, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: 7, // 左右
+      y: -8,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -262,6 +350,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 3, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 7, // 左右
+      y: -8,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -270,6 +362,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 3, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 7, // 左右
+      y: -8,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -277,7 +373,11 @@ export const PRODUCT_CATALOG = [
     size: 'S',
     scale: 1,
     aspectRatio: 125 / 72,
-    footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprint: { width: 3, depth: 3 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: 0, // 左右
+      y: -8,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -286,14 +386,22 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 0, // 左右
+      y: -8,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
-  poco('poco_rug_001', 'チェックコットンラグ', 'rug', 420, '🧶', '足元をやわらかく彩る、洗えるコットンラグ。', ['popular'], {
+  poco('poco_rug_006', 'チェックコットンラグ', 'rug', 420, '🧶', '足元をやわらかく彩る、洗えるコットンラグ。', ['popular'], {
     size: 'S',
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 0, // 左右
+      y: -8,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -303,6 +411,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 14, // 左右
+      y: 0,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -311,6 +423,10 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 14, // 左右
+      y: 0,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -319,32 +435,48 @@ export const PRODUCT_CATALOG = [
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 14, // 左右
+      y: 0,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
 
   // ここからクッションの追加商品
   poco('poco_cushion_001', 'やわらかクッション', 'cushion', 80, '🛋️', '座り心地の良い、やわらかいクッション。', ['new'], {
-    size: 'S',
+    size: 'XS',
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: -2, // 左右
+      y: -3,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
   poco('poco_cushion_002', 'ふかふかクッション', 'cushion', 120, '🛋️', 'より快適な座り心地を。', ['recommended'], {
-    size: 'S',
+    size: 'XS',
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: -2, // 左右
+      y: -3,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
   poco('poco_cushion_003', 'ふわふわクッション', 'cushion', 80, '🛋️', 'かわいげのあるデザインで、部屋を彩ります。', ['new'], {
-    size: 'S',
+    size: 'XS',
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 1, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: -2, // 左右
+      y: -3,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -354,7 +486,11 @@ export const PRODUCT_CATALOG = [
    size: 'M',
     scale: 1,
     aspectRatio: 125 / 72,
-    footprint: { width: 3, depth: 2 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprint: { width: 3, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: -1, // 左右
+      y: 1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -363,7 +499,11 @@ export const PRODUCT_CATALOG = [
    size: 'M',
     scale: 1,
     aspectRatio: 125 / 72,
-    footprint: { width: 3, depth: 2 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprint: { width: 3, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: -1, // 左右
+      y: 1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -372,7 +512,11 @@ export const PRODUCT_CATALOG = [
    size: 'M',
     scale: 1,
     aspectRatio: 125 / 72,
-    footprint: { width: 3, depth: 2 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprint: { width: 3, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: -1, // 左右
+      y: 1,  // 上下
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -382,7 +526,11 @@ export const PRODUCT_CATALOG = [
     { size: 'L',
     scale: 1,
     aspectRatio: 125 / 72,
-    footprint: { width: 3, depth: 2 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprint: { width: 2, depth: 3 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 11,
+      y: 3,
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -390,7 +538,11 @@ export const PRODUCT_CATALOG = [
     { size: 'L',
     scale: 1,
     aspectRatio: 125 / 72,
-    footprint: { width: 3, depth: 2 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprint: { width: 2, depth: 3 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 11,
+      y: 3,
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
@@ -398,7 +550,11 @@ export const PRODUCT_CATALOG = [
     { size: 'L',
     scale: 1,
     aspectRatio: 125 / 72,
-    footprint: { width: 3, depth: 2 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprint: { width: 2, depth: 3 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 11,
+      y: 3,
+    },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
