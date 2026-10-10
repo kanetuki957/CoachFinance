@@ -35,8 +35,9 @@ export const FurnitureInventory = ({ open, onClose, ownedFurniture, placedFurnit
     }
   };
 
-  return <div className={`fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-md transition-transform duration-300 ease-out ${open ? 'translate-y-0' : 'pointer-events-none translate-y-full'}`} aria-hidden={!open}>
-    <section className="rounded-t-[2rem] border-x border-t border-white/15 bg-slate-900/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 text-slate-100 shadow-[0_-18px_45px_rgba(2,6,23,.5)] backdrop-blur" aria-label="保有家具">
+  return <div className={`fixed inset-0 z-[100] ${open ? '' : 'pointer-events-none'}`} aria-hidden={!open}>
+    <button type="button" tabIndex={open ? 0 : -1} onClick={onClose} aria-label="保有家具インベントリを閉じる" className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`} />
+    <section className={`absolute inset-x-0 bottom-0 mx-auto w-full max-w-md rounded-t-[2rem] border-x border-t border-white/15 bg-slate-900/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 text-slate-100 shadow-[0_-18px_45px_rgba(2,6,23,.5)] backdrop-blur transition-transform duration-300 ease-out ${open ? 'translate-y-0' : 'translate-y-full'}`} aria-label="保有家具">
       <div className="mx-auto h-1 w-10 rounded-full bg-slate-500" />
       <header className="mt-3 flex items-center justify-between"><div><p className="text-[10px] font-black uppercase tracking-[.2em] text-amber-300">Furniture inventory</p><h2 className="text-lg font-black">保有家具</h2></div><button type="button" onClick={onClose} className="rounded-xl p-2 text-slate-300 hover:bg-white/10" aria-label="家具インベントリを閉じる"><X className="h-5 w-5" /></button></header>
       <div className="mt-3 flex gap-2 overflow-x-auto pb-2" role="tablist">{categories.map((item) => <button key={item.id} type="button" role="tab" aria-selected={category === item.id} onClick={() => setCategory(item.id)} className={`shrink-0 rounded-full px-3 py-2 text-xs font-black ${category === item.id ? 'bg-amber-300 text-slate-950' : 'bg-white/10 text-slate-300'}`}>{item.name}</button>)}</div>
