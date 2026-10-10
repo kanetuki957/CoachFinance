@@ -29,6 +29,7 @@ import { getProductById, isProductImagePath } from './domain/shop/productCatalog
 import { getFurnitureOrientations, getGridFootprint, GRID_CELL_SIZE, isFurniturePlacementAvailable, isFurniturePlacementInAllowedZone, ROOM_GRID } from './domain/furniture/furnitureInventory';
 import { getPlacementType } from './domain/room/placementZones';
 import { getFootprintMarkerPolygons } from './domain/room/roomGrid';
+import { getDepthOrder } from './domain/room/depthOrder';
 import { resolveFurnitureSize } from './domain/room/furnitureSizing';
 import companionRoom from './assets/rooms/companion-room.png';
 import companionCharacter from './assets/characters/ChatGPT Image 2026年8月15日 10_43_54 (1).png';
@@ -47,6 +48,9 @@ const STATUS_LABELS = { knowledge: '知力', wealth: '運', strength: '体力' }
 
 
 const FURNITURE_FLOAT_OFFSET = 45;  //家具画像の浮く高さ調整
+// These percentage values preserve the existing character position and make
+// its floor contact available to the shared depth-order calculation.
+const COMPANION_POSITION = { left: 47, bottom: 19, width: 10 };
 
 const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPlacementMove, onEditFurniture }) => {
   const roomRef = useRef(null);
@@ -72,6 +76,7 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     drag.current = null;
   };
+  const companionDepth = getDepthOrder({ floorContact: { x: COMPANION_POSITION.left, y: 100 - COMPANION_POSITION.bottom } });
   return (
   <div
     ref={roomRef}
@@ -89,10 +94,10 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
         : [];
         const shouldFloat = getPlacementType(placement.product) === 'floor';
       return <>
-        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 25 }}>
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 2500 }}>
           {footprintMarkers.map((points, index) => <polygon key={index} points={points} fill={available ? 'rgba(125,211,252,.32)' : 'rgba(251,113,133,.40)'} stroke={available ? 'rgba(186,230,253,.60)' : 'rgba(251,113,133,.85)'} strokeWidth="0.35" />)}
         </svg>
-        <div onPointerDown={startPreviewDrag} onPointerMove={movePreview} onPointerUp={endPreviewDrag} onPointerCancel={endPreviewDrag} className="absolute touch-none" style={{ left: `${(placement.gridX / ROOM_GRID.columns) * 100}%`, top: `${(placement.gridY / ROOM_GRID.rows) * 100}%`, width: `${(displaySize.width / 320) * 100}%`, height: `${(displaySize.height / 320) * 100}%`, zIndex: 30 }}>
+        <div onPointerDown={startPreviewDrag} onPointerMove={movePreview} onPointerUp={endPreviewDrag} onPointerCancel={endPreviewDrag} className="absolute touch-none" style={{ left: `${(placement.gridX / ROOM_GRID.columns) * 100}%`, top: `${(placement.gridY / ROOM_GRID.rows) * 100}%`, width: `${(displaySize.width / 320) * 100}%`, height: `${(displaySize.height / 320) * 100}%`, zIndex: 3000 }}>
         <div className="h-full w-full transition-transform duration-150 ease-out" style={{ transform: shouldFloat ? `translateY(-${FURNITURE_FLOAT_OFFSET}px)` : undefined }}>
           {isProductImagePath(footprint.image) && <img src={footprint.image} alt="" className="h-full w-full object-contain opacity-80" />}
         </div>
@@ -101,10 +106,11 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
     <img
       src={companionCharacter}
       alt="部屋にいるキャラクター"
-      className={`absolute bottom-[19%] left-[47%] z-10 w-[24%] -translate-x-1/2 mix-blend-multiply transition-transform duration-700 ${isComplete ? 'scale-110' : 'animate-[pulse_3s_ease-in-out_infinite]'}`}
+      className={`pointer-events-none absolute -translate-x-1/2 transition-transform duration-700 ${isComplete ? 'scale-110' : 'animate-[pulse_3s_ease-in-out_infinite]'}`}
+      style={{ left: `${COMPANION_POSITION.left}%`, bottom: `${COMPANION_POSITION.bottom}%`, width: `${COMPANION_POSITION.width}%`, zIndex: companionDepth }}
     />
-    <div className="absolute bottom-[19%] left-[47%] h-[3%] w-[18%] -translate-x-1/2 rounded-[100%] bg-slate-950/35 blur-sm" />
-    <span className="absolute bottom-3 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full border border-white/15 bg-slate-950/70 px-3 py-1 text-[10px] font-black tracking-[0.18em] text-amber-200 backdrop-blur-sm">
+    <div className="pointer-events-none absolute h-[3%] w-[18%] -translate-x-1/2 rounded-[100%] bg-slate-950/35 blur-sm" style={{ left: `${COMPANION_POSITION.left}%`, bottom: `${COMPANION_POSITION.bottom}%`, zIndex: companionDepth }} />
+    <span className="absolute bottom-3 left-1/2 z-[2000] -translate-x-1/2 whitespace-nowrap rounded-full border border-white/15 bg-slate-950/70 px-3 py-1 text-[10px] font-black tracking-[0.18em] text-amber-200 backdrop-blur-sm">
       {isComplete ? 'QUEST CLEAR!' : `ENERGY ${progress}%`}
     </span>
   </div>
