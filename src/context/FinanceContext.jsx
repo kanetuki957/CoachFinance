@@ -3,6 +3,8 @@ import { completeTaskInGoal, normalizeTaskPlan } from '../domain/tasks/taskPlan'
 import { applyTaskCompletionReward, normalizeGameState } from '../domain/game/gameProgress';
 import { placeFurniture, purchaseFurniture, removeFurniture, updateFurniturePlacement, updateFurniturePosition } from '../domain/furniture/furnitureInventory';
 import { purchaseProduct } from '../domain/shop/productInventory';
+import { CHALLENGE_TEMPLATES, assertValidChallengeTemplates, findChallengeTemplate } from '../domain/challenges/challengeCatalog';
+import { cancelChallenge as cancelStoredChallenge, normalizeChallenges, startChallenge as startStoredChallenge } from '../domain/challenges/challengeManagement';
 
 const GoalContext = createContext(null);
 const STORAGE_KEY = 'coach_goal_data_v1';
@@ -270,6 +272,10 @@ export const GOAL_CATEGORIES = [
   },
 ];
 
+// Keep challenge templates aligned with the existing goal catalogue without
+// coupling the domain modules to React state.
+assertValidChallengeTemplates(CHALLENGE_TEMPLATES, GOAL_CATEGORIES);
+
 // Older saved goals do not have taskPlan, so keep a small compatibility fallback.
 const LEGACY_TASK_PLANS = {
   exercise: EXERCISE_DEFAULT_PLAN,
@@ -303,8 +309,16 @@ export const FinanceProvider = ({ children }) => {
       return normalizeGameState();
     }
   });
+  const [challenges, setChallenges] = useState(() => {
+    try {
+      return normalizeChallenges(JSON.parse(localStorage.getItem(STORAGE_KEY))?.challenges);
+    } catch {
+      return [];
+    }
+  });
   const activeGoalRef = useRef(activeGoal);
   const gameRef = useRef(game);
+  const challengesRef = useRef(challenges);
 
   useEffect(() => {
     activeGoalRef.current = activeGoal;
@@ -315,8 +329,12 @@ export const FinanceProvider = ({ children }) => {
   }, [game]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal, profile, game }));
-  }, [activeGoal, profile, game]);
+    challengesRef.current = challenges;
+  }, [challenges]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal, profile, game, challenges }));
+  }, [activeGoal, profile, game, challenges]);
 
   const selectGoal = (category, goal) => {
     setActiveGoal({
@@ -424,8 +442,36 @@ export const FinanceProvider = ({ children }) => {
     return removal.ok;
   };
 
+  // Phase 3 only exposes future UI entry points. Completion/failure remain
+  // internal domain transitions until progress evaluation is implemented.
+  const startChallenge = (goalId, selectedReward, options = {}) => {
+    const template = findChallengeTemplate(goalId, CHALLENGE_TEMPLATES);
+    if (!template) return { ok: false, reason: 'not-found' };
+    const started = startStoredChallenge(challengesRef.current, template, selectedReward, options);
+    if (started.ok) {
+      challengesRef.current = started.challenges;
+      setChallenges(started.challenges);
+    }
+    return started;
+  };
+
+  const cancelChallenge = (challengeId, now) => {
+    const cancelled = cancelStoredChallenge(challengesRef.current, challengeId, now);
+    if (cancelled.ok) {
+      challengesRef.current = cancelled.challenges;
+      setChallenges(cancelled.challenges);
+    }
+    return cancelled;
+  };
+
+  const retryChallenge = (challengeId, selectedReward, options = {}) => {
+    const previous = challengesRef.current.find((challenge) => challenge.id === challengeId);
+    if (!previous || !['failed', 'cancelled'].includes(previous.status)) return { ok: false, reason: 'not-retryable' };
+    return startChallenge(previous.goalId, selectedReward, { ...options, previousChallengeId: previous.id });
+  };
+
   return (
-    <GoalContext.Provider value={{ activeGoal, game, profile, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, addDebugMoney, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture }}>
+    <GoalContext.Provider value={{ activeGoal, game, profile, challenges, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, addDebugMoney, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture, startChallenge, cancelChallenge, retryChallenge }}>
       {children}
     </GoalContext.Provider>
   );
