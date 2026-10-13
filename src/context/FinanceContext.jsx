@@ -5,6 +5,7 @@ import { placeFurniture, purchaseFurniture, removeFurniture, updateFurniturePlac
 import { purchaseProduct } from '../domain/shop/productInventory';
 import { CHALLENGE_TEMPLATES, assertValidChallengeTemplates, findChallengeTemplate } from '../domain/challenges/challengeCatalog';
 import { cancelChallenge as cancelStoredChallenge, normalizeChallenges, startChallenge as startStoredChallenge } from '../domain/challenges/challengeManagement';
+import { normalizeChallengeCompletions, recordChallengeActivity as recordStoredChallengeActivity } from '../domain/challenges/challengeProgress';
 
 const GoalContext = createContext(null);
 const STORAGE_KEY = 'coach_goal_data_v1';
@@ -316,9 +317,17 @@ export const FinanceProvider = ({ children }) => {
       return [];
     }
   });
+  const [challengeCompletions, setChallengeCompletions] = useState(() => {
+    try {
+      return normalizeChallengeCompletions(JSON.parse(localStorage.getItem(STORAGE_KEY))?.challengeCompletions);
+    } catch {
+      return [];
+    }
+  });
   const activeGoalRef = useRef(activeGoal);
   const gameRef = useRef(game);
   const challengesRef = useRef(challenges);
+  const challengeCompletionsRef = useRef(challengeCompletions);
 
   useEffect(() => {
     activeGoalRef.current = activeGoal;
@@ -333,8 +342,12 @@ export const FinanceProvider = ({ children }) => {
   }, [challenges]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal, profile, game, challenges }));
-  }, [activeGoal, profile, game, challenges]);
+    challengeCompletionsRef.current = challengeCompletions;
+  }, [challengeCompletions]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal, profile, game, challenges, challengeCompletions }));
+  }, [activeGoal, profile, game, challenges, challengeCompletions]);
 
   const selectGoal = (category, goal) => {
     setActiveGoal({
@@ -470,8 +483,25 @@ export const FinanceProvider = ({ children }) => {
     return startChallenge(previous.goalId, selectedReward, { ...options, previousChallengeId: previous.id });
   };
 
+  const recordChallengeActivity = (challengeId, value, options = {}) => {
+    const recorded = recordStoredChallengeActivity(
+      challengesRef.current,
+      challengeCompletionsRef.current,
+      challengeId,
+      value,
+      options,
+    );
+    if (recorded.ok) {
+      challengesRef.current = recorded.challenges;
+      challengeCompletionsRef.current = recorded.challengeCompletions;
+      setChallenges(recorded.challenges);
+      setChallengeCompletions(recorded.challengeCompletions);
+    }
+    return recorded;
+  };
+
   return (
-    <GoalContext.Provider value={{ activeGoal, game, profile, challenges, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, addDebugMoney, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture, startChallenge, cancelChallenge, retryChallenge }}>
+    <GoalContext.Provider value={{ activeGoal, game, profile, challenges, challengeCompletions, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, addDebugMoney, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture, startChallenge, cancelChallenge, retryChallenge, recordChallengeActivity }}>
       {children}
     </GoalContext.Provider>
   );
