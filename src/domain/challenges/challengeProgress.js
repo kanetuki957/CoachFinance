@@ -23,7 +23,7 @@ export const normalizeChallengeCompletions = (completions) => {
     if (completion.sourceId && (typeof completion.sourceId !== 'string' || sourceIds.has(completion.sourceId))) return [];
     ids.add(completion.id);
     if (completion.sourceId) sourceIds.add(completion.sourceId);
-    return [{ ...completion, coinsEarned: 0, sourceId: completion.sourceId ?? null }];
+    return [{ ...completion, coinsEarned: Math.max(0, Number(completion.coinsEarned) || 0), statusEarned: Math.max(0, Number(completion.statusEarned) || 0), sourceId: completion.sourceId ?? null }];
   });
 };
 
@@ -80,7 +80,7 @@ export const createChallengeCompletion = (challenge, completions, value, options
     id: options.id ?? createId(), challengeId: challenge.id, goalId: challenge.goalId,
     recordType: challenge.recordType, value: validation.value, unit: challenge.unit,
     completedAt: options.completedAt ?? localIso(validation.now), localDate: validation.localDate,
-    coinsEarned: 0, sourceId: options.sourceId ?? null,
+    coinsEarned: 0, statusEarned: 0, sourceId: options.sourceId ?? null,
   }};
 };
 

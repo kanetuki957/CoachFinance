@@ -6,7 +6,7 @@ export const CHALLENGE_DIFFICULTY_REWARDS = Object.freeze({
 });
 
 // Configuration only. Existing goal/task rewards remain unchanged.
-export const STANDARD_TASK_REWARD = Object.freeze({ coins: 50, cadence: 'per-day', scope: 'same-goal' });
+export const STANDARD_TASK_REWARD = Object.freeze({ coins: 50, statusReward: 5, cadence: 'per-day', scope: 'same-goal' });
 
 export const CHALLENGE_TEMPLATES = Object.freeze([
   Object.freeze({ id: 'exercise-10-minutes', title: '毎日10分だけ運動する', category: 'strength', difficulty: 'easy', durationDays: 7, recordType: 'checkbox', progressType: 'streak', targetValue: 7, unit: 'days', maxPerDay: 1 }),

@@ -1,4 +1,4 @@
-import { purchaseFurniture } from '../furniture/furnitureInventory.js';
+import { getOwnedFurnitureQuantity, normalizeFurnitureState, purchaseFurniture } from '../furniture/furnitureInventory.js';
 import { getProductById } from './productCatalog.js';
 
 // 旧 ownedFurniture と新しい ownedProducts を統合し、保存データを安全な形式にそろえる。
@@ -53,4 +53,20 @@ export const purchaseProduct = (game, productId) => {
 
   // 更新済み game は呼び出し元が commit し、UI には購入した商品を返す。
   return { game: { ...sourceGame, ownedProducts }, result: { ok: true, product } };
+};
+
+/** Grants one furniture item without applying the shop's coin charge. */
+export const grantFurnitureReward = (game, productId, quantity = 1) => {
+  const product = getProductById(productId);
+  const amount = Number(quantity);
+  if (!product?.isFurniture || !Number.isInteger(amount) || amount !== 1) return { ok: false, reason: 'invalid-furniture-reward', game };
+  const furnitureState = normalizeFurnitureState(game);
+  const ownedFurniture = getOwnedFurnitureQuantity(furnitureState.ownedFurniture, productId)
+    ? furnitureState.ownedFurniture.map((item) => item.furnitureId === productId ? { ...item, quantity: item.quantity + amount } : item)
+    : [...furnitureState.ownedFurniture, { furnitureId: productId, quantity: amount }];
+  const inventory = normalizeProductInventory({ ...game, ...furnitureState, ownedFurniture });
+  // normalizeProductInventory derives furniture product quantities from the
+  // updated ownedFurniture value, so incrementing again here would double-add.
+  const ownedProducts = inventory.ownedProducts;
+  return { ok: true, game: { ...game, ...furnitureState, ownedFurniture, ownedProducts }, product };
 };

@@ -6,6 +6,7 @@ import { purchaseProduct } from '../domain/shop/productInventory';
 import { CHALLENGE_TEMPLATES, assertValidChallengeTemplates, findChallengeTemplate } from '../domain/challenges/challengeCatalog';
 import { cancelChallenge as cancelStoredChallenge, normalizeChallenges, startChallenge as startStoredChallenge } from '../domain/challenges/challengeManagement';
 import { normalizeChallengeCompletions, recordChallengeActivity as recordStoredChallengeActivity } from '../domain/challenges/challengeProgress';
+import { applyChallengeActivityReward, claimChallengeCompletionReward, normalizeChallengeRewardClaims } from '../domain/challenges/challengeRewards';
 
 const GoalContext = createContext(null);
 const STORAGE_KEY = 'coach_goal_data_v1';
@@ -324,10 +325,18 @@ export const FinanceProvider = ({ children }) => {
       return [];
     }
   });
+  const [challengeRewardClaims, setChallengeRewardClaims] = useState(() => {
+    try {
+      return normalizeChallengeRewardClaims(JSON.parse(localStorage.getItem(STORAGE_KEY))?.challengeRewardClaims);
+    } catch {
+      return [];
+    }
+  });
   const activeGoalRef = useRef(activeGoal);
   const gameRef = useRef(game);
   const challengesRef = useRef(challenges);
   const challengeCompletionsRef = useRef(challengeCompletions);
+  const challengeRewardClaimsRef = useRef(challengeRewardClaims);
 
   useEffect(() => {
     activeGoalRef.current = activeGoal;
@@ -346,8 +355,12 @@ export const FinanceProvider = ({ children }) => {
   }, [challengeCompletions]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal, profile, game, challenges, challengeCompletions }));
-  }, [activeGoal, profile, game, challenges, challengeCompletions]);
+    challengeRewardClaimsRef.current = challengeRewardClaims;
+  }, [challengeRewardClaims]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal, profile, game, challenges, challengeCompletions, challengeRewardClaims }));
+  }, [activeGoal, profile, game, challenges, challengeCompletions, challengeRewardClaims]);
 
   const selectGoal = (category, goal) => {
     setActiveGoal({
@@ -491,17 +504,43 @@ export const FinanceProvider = ({ children }) => {
       value,
       options,
     );
-    if (recorded.ok) {
-      challengesRef.current = recorded.challenges;
-      challengeCompletionsRef.current = recorded.challengeCompletions;
-      setChallenges(recorded.challenges);
-      setChallengeCompletions(recorded.challengeCompletions);
+    if (!recorded.ok) return recorded;
+
+    const activityReward = applyChallengeActivityReward(
+      gameRef.current,
+      recorded.challenge,
+      challengeCompletionsRef.current,
+      recorded.completion,
+    );
+    const challengeCompletions = recorded.challengeCompletions.map((completion) =>
+      completion.id === recorded.completion.id ? activityReward.completion : completion,
+    );
+    let nextGame = activityReward.game;
+    let nextChallenges = recorded.challenges;
+    let nextClaims = challengeRewardClaimsRef.current;
+    let completionReward = null;
+    if (recorded.achieved) {
+      const claimed = claimChallengeCompletionReward(nextGame, nextChallenges, nextClaims, challengeId, options.now);
+      if (claimed.ok) {
+        nextGame = claimed.game;
+        nextChallenges = claimed.challenges;
+        nextClaims = claimed.claims;
+        completionReward = claimed.claim;
+      }
     }
-    return recorded;
+    gameRef.current = nextGame;
+    challengesRef.current = nextChallenges;
+    challengeCompletionsRef.current = challengeCompletions;
+    challengeRewardClaimsRef.current = nextClaims;
+    setGame(nextGame);
+    setChallenges(nextChallenges);
+    setChallengeCompletions(challengeCompletions);
+    setChallengeRewardClaims(nextClaims);
+    return { ...recorded, challenges: nextChallenges, challengeCompletions, normalReward: { coinsEarned: activityReward.completion.coinsEarned, statusEarned: activityReward.completion.statusEarned }, completionReward };
   };
 
   return (
-    <GoalContext.Provider value={{ activeGoal, game, profile, challenges, challengeCompletions, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, addDebugMoney, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture, startChallenge, cancelChallenge, retryChallenge, recordChallengeActivity }}>
+    <GoalContext.Provider value={{ activeGoal, game, profile, challenges, challengeCompletions, challengeRewardClaims, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, addDebugMoney, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture, startChallenge, cancelChallenge, retryChallenge, recordChallengeActivity }}>
       {children}
     </GoalContext.Provider>
   );
