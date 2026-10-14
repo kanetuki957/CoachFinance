@@ -22,6 +22,8 @@ import { PlayerStatusPanel } from './components/home/PlayerStatusPanel';
 import { Shop } from './components/Shop';
 import { RoomFurniture } from './components/room/RoomFurniture';
 import { FurnitureInventory } from './components/room/FurnitureInventory';
+import { ChallengeCreator } from './components/challenges/ChallengeCreator';
+import { ActiveChallenges } from './components/challenges/ActiveChallenges';
 import { playCompletionSound } from './utils/playCompletionSound';
 import { createGoalBgm } from './utils/createGoalBgm';
 import { getCompletedTaskIds } from './domain/tasks/taskPlan';
@@ -130,7 +132,7 @@ const SelectedGoal = ({ goal }) => (
   </section>
 );
 
-const Home = ({ openGoalSelector, onOpenShop }) => {
+const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onRetryChallenge }) => {
   const { activeGoal, completeTask, game, addDebugMoney, placeOwnedFurniture, saveFurniturePlacement, removePlacedFurniture } = useFinance();
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -321,6 +323,7 @@ const Home = ({ openGoalSelector, onOpenShop }) => {
             <p className="mt-3 text-sm font-bold leading-relaxed text-slate-400">右下の＋ボタンから目標を選ぶと、毎日のクエストが始まります。</p>
           </section>
         )}
+        <ActiveChallenges onCreate={onOpenChallenges} onRetry={onRetryChallenge} />
       </main>
 
       <TransactionForm openOnMount={openGoalSelector} />
@@ -362,6 +365,7 @@ const Home = ({ openGoalSelector, onOpenShop }) => {
           </div>
         </div>
       )}
+      <button onClick={onOpenChallenges} className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-sky-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-sky-200" aria-label="チャレンジを作成"><Target className="h-5 w-5" />CHALLENGE</button>
       <Analytics />
     </div>
   );
@@ -372,10 +376,14 @@ export default function App() {
 }
 
 function AppContent() {
-  const { profile } = useFinance();
+  const { profile, challenges } = useFinance();
   const [completedNow, setCompletedNow] = useState(false);
   const [screen, setScreen] = useState('home');
+  const [retryChallengeId, setRetryChallengeId] = useState(null);
+  const retrySource = challenges.find((challenge) => challenge.id === retryChallengeId) ?? null;
   if (!profile && !completedNow) return <Onboarding onComplete={() => setCompletedNow(true)} />;
   if (screen === 'shop') return <Shop onBack={() => setScreen('home')} />;
-  return <Home openGoalSelector={completedNow} onOpenShop={() => setScreen('shop')} />;
+  if (screen === 'challenge-create') return <ChallengeCreator onBack={() => setScreen('home')} />;
+  if (screen === 'challenge-retry' && retrySource) return <ChallengeCreator retrySource={retrySource} onBack={() => setScreen('home')} />;
+  return <Home openGoalSelector={completedNow} onOpenShop={() => setScreen('shop')} onOpenChallenges={() => setScreen('challenge-create')} onRetryChallenge={(challenge) => { setRetryChallengeId(challenge.id); setScreen('challenge-retry'); }} />;
 }

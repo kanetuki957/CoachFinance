@@ -362,6 +362,45 @@ export const FinanceProvider = ({ children }) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal, profile, game, challenges, challengeCompletions, challengeRewardClaims }));
   }, [activeGoal, profile, game, challenges, challengeCompletions, challengeRewardClaims]);
 
+  // Expire challenges on app return and when the local calendar day changes.
+  // This deliberately avoids a high-frequency polling timer.
+  const refreshChallengeStatuses = (now = new Date()) => {
+    const normalized = normalizeChallenges(challengesRef.current, now);
+    if (JSON.stringify(normalized) !== JSON.stringify(challengesRef.current)) {
+      challengesRef.current = normalized;
+      setChallenges(normalized);
+    }
+    return normalized;
+  };
+
+  useEffect(() => {
+    const refresh = () => refreshChallengeStatuses();
+    const millisecondsUntilTomorrow = () => {
+      const now = new Date();
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      return Math.max(1000, tomorrow.getTime() - now.getTime() + 50);
+    };
+    let timer;
+    const scheduleMidnightRefresh = () => {
+      timer = window.setTimeout(() => {
+        refresh();
+        scheduleMidnightRefresh();
+      }, millisecondsUntilTomorrow());
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    refresh();
+    scheduleMidnightRefresh();
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
+
   const selectGoal = (category, goal) => {
     setActiveGoal({
       id: `${goal.id}-${Date.now()}`,
@@ -540,7 +579,7 @@ export const FinanceProvider = ({ children }) => {
   };
 
   return (
-    <GoalContext.Provider value={{ activeGoal, game, profile, challenges, challengeCompletions, challengeRewardClaims, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, addDebugMoney, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture, startChallenge, cancelChallenge, retryChallenge, recordChallengeActivity }}>
+    <GoalContext.Provider value={{ activeGoal, game, profile, challenges, challengeCompletions, challengeRewardClaims, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, addDebugMoney, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture, startChallenge, cancelChallenge, retryChallenge, recordChallengeActivity, refreshChallengeStatuses }}>
       {children}
     </GoalContext.Provider>
   );
