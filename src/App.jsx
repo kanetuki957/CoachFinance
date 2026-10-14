@@ -24,6 +24,7 @@ import { RoomFurniture } from './components/room/RoomFurniture';
 import { FurnitureInventory } from './components/room/FurnitureInventory';
 import { ChallengeCreator } from './components/challenges/ChallengeCreator';
 import { ActiveChallenges } from './components/challenges/ActiveChallenges';
+import { GrowthHistory } from './components/challenges/GrowthHistory';
 import { playCompletionSound } from './utils/playCompletionSound';
 import { createGoalBgm } from './utils/createGoalBgm';
 import { getCompletedTaskIds } from './domain/tasks/taskPlan';
@@ -132,7 +133,7 @@ const SelectedGoal = ({ goal }) => (
   </section>
 );
 
-const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onRetryChallenge }) => {
+const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onOpenHistory, onRetryChallenge }) => {
   const { activeGoal, completeTask, game, addDebugMoney, placeOwnedFurniture, saveFurniturePlacement, removePlacedFurniture } = useFinance();
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -365,6 +366,7 @@ const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onRetryChallenge
           </div>
         </div>
       )}
+      <button onClick={onOpenHistory} className="fixed bottom-[5.25rem] right-6 z-40 flex items-center gap-2 rounded-full border border-white/15 bg-slate-900/95 px-4 py-3 text-sm font-black text-slate-100 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-slate-800" aria-label="成長の記録を開く"><Trophy className="h-5 w-5 text-amber-300" />記録</button>
       <button onClick={onOpenChallenges} className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-sky-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-sky-200" aria-label="チャレンジを作成"><Target className="h-5 w-5" />CHALLENGE</button>
       <Analytics />
     </div>
@@ -385,5 +387,6 @@ function AppContent() {
   if (screen === 'shop') return <Shop onBack={() => setScreen('home')} />;
   if (screen === 'challenge-create') return <ChallengeCreator onBack={() => setScreen('home')} />;
   if (screen === 'challenge-retry' && retrySource) return <ChallengeCreator retrySource={retrySource} onBack={() => setScreen('home')} />;
-  return <Home openGoalSelector={completedNow} onOpenShop={() => setScreen('shop')} onOpenChallenges={() => setScreen('challenge-create')} onRetryChallenge={(challenge) => { setRetryChallengeId(challenge.id); setScreen('challenge-retry'); }} />;
+  if (screen === 'growth-history') return <GrowthHistory onBack={() => setScreen('home')} />;
+  return <Home openGoalSelector={completedNow} onOpenShop={() => setScreen('shop')} onOpenChallenges={() => setScreen('challenge-create')} onOpenHistory={() => setScreen('growth-history')} onRetryChallenge={(challenge) => { setRetryChallengeId(challenge.id); setScreen('challenge-retry'); }} />;
 }
