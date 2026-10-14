@@ -6,7 +6,7 @@ import { purchaseProduct } from '../domain/shop/productInventory';
 import { CHALLENGE_TEMPLATES, assertValidChallengeTemplates, findChallengeTemplate } from '../domain/challenges/challengeCatalog';
 import { cancelChallenge as cancelStoredChallenge, normalizeChallenges, startChallenge as startStoredChallenge } from '../domain/challenges/challengeManagement';
 import { normalizeChallengeCompletions, recordChallengeActivity as recordStoredChallengeActivity } from '../domain/challenges/challengeProgress';
-import { applyChallengeActivityReward, claimChallengeCompletionReward, normalizeChallengeRewardClaims } from '../domain/challenges/challengeRewards';
+import { applyChallengeActivityReward, claimChallengeCompletionReward, completeAndClaimChallengeReward, normalizeChallengeRewardClaims } from '../domain/challenges/challengeRewards';
 
 const GoalContext = createContext(null);
 const STORAGE_KEY = 'coach_goal_data_v1';
@@ -578,8 +578,38 @@ export const FinanceProvider = ({ children }) => {
     return { ...recorded, challenges: nextChallenges, challengeCompletions, normalReward: { coinsEarned: activityReward.completion.coinsEarned, statusEarned: activityReward.completion.statusEarned }, completionReward };
   };
 
+  // Deliberately not exposed in production. It creates no activity records and
+  // therefore cannot award the daily activity coin/status reward.
+  const debugCompleteChallenge = import.meta.env.DEV ? (challengeId, now = new Date()) => {
+    const current = challengesRef.current.find((challenge) => challenge.id === challengeId);
+    const completed = completeAndClaimChallengeReward(
+      gameRef.current,
+      challengesRef.current,
+      challengeRewardClaimsRef.current,
+      challengeId,
+      { now, completionSource: 'debug', completedProgress: current?.targetValue },
+    );
+    if (!completed.ok) return completed;
+
+    gameRef.current = completed.game;
+    challengesRef.current = completed.challenges;
+    challengeRewardClaimsRef.current = completed.claims;
+    setGame(completed.game);
+    setChallenges(completed.challenges);
+    setChallengeRewardClaims(completed.claims);
+    return {
+      ok: true,
+      achieved: true,
+      challenge: completed.challenge,
+      progress: completed.challenge.completedProgress ?? completed.challenge.targetValue,
+      completionReward: completed.claim,
+      normalReward: { coinsEarned: 0, statusEarned: 0 },
+      debug: true,
+    };
+  } : undefined;
+
   return (
-    <GoalContext.Provider value={{ activeGoal, game, profile, challenges, challengeCompletions, challengeRewardClaims, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, addDebugMoney, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture, startChallenge, cancelChallenge, retryChallenge, recordChallengeActivity, refreshChallengeStatuses }}>
+    <GoalContext.Provider value={{ activeGoal, game, profile, challenges, challengeCompletions, challengeRewardClaims, setProfile, selectGoal, completeTask, buyFurniture, buyProduct, toggleFavoriteProduct, addDebugMoney, placeOwnedFurniture, movePlacedFurniture, saveFurniturePlacement, removePlacedFurniture, startChallenge, cancelChallenge, retryChallenge, recordChallengeActivity, refreshChallengeStatuses, ...(import.meta.env.DEV ? { debugCompleteChallenge } : {}) }}>
       {children}
     </GoalContext.Provider>
   );

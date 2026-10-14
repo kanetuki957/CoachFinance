@@ -53,7 +53,7 @@ export const createChallenge = (template, selectedReward, options = {}) => {
     targetValue: template.targetValue, unit: template.unit, maxPerDay: template.maxPerDay,
     startDate, endDate: addDays(startDate, template.durationDays - 1), status: ACTIVE_STATUS,
     selectedReward: reward.reward, rewardClaimed: false, previousChallengeId: options.previousChallengeId ?? null,
-    completedAt: null, failedAt: null, cancelledAt: null,
+    completedAt: null, failedAt: null, cancelledAt: null, completionSource: null, completedProgress: null,
   }};
 };
 
@@ -89,6 +89,16 @@ export const normalizeChallenges = (challenges, now = new Date()) => {
     if (!selectedReward || typeof selectedReward !== 'object') return [];
     const status = isChallengeExpired(item, now) ? 'failed' : item.status;
     const failedAt = status === 'failed' ? (item.failedAt ?? now.toISOString()) : null;
-    return [{ ...item, status, rewardClaimed: Boolean(item.rewardClaimed), previousChallengeId: typeof item.previousChallengeId === 'string' ? item.previousChallengeId : null, completedAt: item.completedAt ?? null, failedAt, cancelledAt: item.cancelledAt ?? null }];
+    return [{
+      ...item,
+      status,
+      rewardClaimed: Boolean(item.rewardClaimed),
+      previousChallengeId: typeof item.previousChallengeId === 'string' ? item.previousChallengeId : null,
+      completedAt: item.completedAt ?? null,
+      failedAt,
+      cancelledAt: item.cancelledAt ?? null,
+      completionSource: item.completionSource === 'debug' ? 'debug' : null,
+      completedProgress: Number.isFinite(item.completedProgress) && item.completedProgress >= 0 ? item.completedProgress : null,
+    }];
   });
 };

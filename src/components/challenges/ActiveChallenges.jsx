@@ -38,11 +38,14 @@ function Reward({ reward, prefix = '' }) {
 }
 
 function ChallengeCard({ challenge, completions, onCompleted, onRequestCancel }) {
-  const { recordChallengeActivity } = useFinance();
+  const finance = useFinance();
+  const { recordChallengeActivity } = finance;
+  const debugCompleteChallenge = import.meta.env.DEV ? finance.debugCompleteChallenge : undefined;
   const [value, setValue] = useState('');
   const [result, setResult] = useState(null);
   const [pending, setPending] = useState(false);
   const pendingRef = useRef(false);
+  const debugPendingRef = useRef(false);
   const template = findChallengeTemplate(challenge.goalId);
   const progress = calculateChallengeProgress(challenge, completions);
   const percent = getChallengeProgressPercent(challenge, completions);
@@ -64,6 +67,19 @@ function ChallengeCard({ challenge, completions, onCompleted, onRequestCancel })
     if (response.achieved) onCompleted({ challenge: response.challenge, progress: response.progress, completionReward: response.completionReward });
   };
 
+  const debugComplete = () => {
+    if (!import.meta.env.DEV || !debugCompleteChallenge || debugPendingRef.current) return;
+    debugPendingRef.current = true;
+    const response = debugCompleteChallenge(challenge.id);
+    debugPendingRef.current = false;
+    if (!response.ok) {
+      setResult({ error: errorText(response.reason) });
+      return;
+    }
+    setResult({ normal: response.normalReward, completion: response.completionReward, debug: true });
+    onCompleted({ challenge: response.challenge, progress: response.progress, completionReward: response.completionReward, debug: true });
+  };
+
   return (
     <article className="rounded-3xl border border-white/10 bg-slate-900/75 p-4 shadow-xl shadow-slate-950/20">
       <div className="flex items-start gap-3">
@@ -83,6 +99,7 @@ function ChallengeCard({ challenge, completions, onCompleted, onRequestCancel })
         <div className="mt-4 flex gap-2"><input inputMode="numeric" value={value} onChange={(event) => setValue(event.target.value)} placeholder={`例: 20 ${unitLabels[challenge.unit] ?? ''}`} className="min-w-0 flex-1 rounded-2xl border border-white/15 bg-slate-800 px-4 py-3 font-bold outline-none focus:border-amber-300" /><button type="button" disabled={!value || pending} onClick={() => submit(value)} className="shrink-0 rounded-2xl bg-amber-300 px-4 py-3 font-black text-slate-950 disabled:bg-slate-700 disabled:text-slate-400">記録する</button></div>
       )}
       {result && <div className={`mt-3 rounded-2xl px-3 py-2 text-sm font-bold ${result.error ? 'bg-rose-400/10 text-rose-100' : 'bg-emerald-400/10 text-emerald-100'}`}>{result.error ? result.error : <><span>今回: +{result.normal?.coinsEarned ?? 0}コイン / ステータス+{result.normal?.statusEarned ?? 0}</span>{result.completion && <span className="ml-2 text-amber-200"><Sparkles className="inline h-4 w-4" />達成報酬を付与しました</span>}</>}</div>}
+      {import.meta.env.DEV && typeof debugCompleteChallenge === 'function' && <button type="button" onClick={debugComplete} className="mt-3 w-full rounded-xl border border-fuchsia-300/50 bg-fuchsia-500/15 py-2 text-xs font-black text-fuchsia-100">開発用：即達成</button>}
       <div className="mt-4 border-t border-white/10 pt-3 text-right"><button type="button" onClick={() => onRequestCancel(challenge)} className="rounded-xl px-3 py-2 text-xs font-bold text-slate-400 hover:bg-rose-400/10 hover:text-rose-200">中断する</button></div>
     </article>
   );
@@ -117,7 +134,7 @@ function ChallengeResults({ challenges, completions, claims, onRetry }) {
   const [open, setOpen] = useState(false);
   const terminal = challenges.filter((challenge) => ['completed', 'failed', 'cancelled'].includes(challenge.status)).slice().reverse();
   if (!terminal.length) return null;
-  return <section className="mt-4 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70"><button type="button" onClick={() => setOpen((value) => !value)} className="flex w-full items-center gap-3 p-4 text-left" aria-expanded={open}><span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-300/10 text-sky-200"><Trophy className="h-5 w-5" /></span><span className="flex-1"><span className="block text-sm font-black">チャレンジ結果</span><span className="block text-xs font-bold text-slate-400">{terminal.length} 件の終了済みチャレンジ</span></span><ChevronDown className={`h-5 w-5 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} /></button>{open && <div className="space-y-3 border-t border-white/10 p-3">{terminal.map((challenge) => { const template = findChallengeTemplate(challenge.goalId); const progress = calculateChallengeProgress(challenge, completions); const percent = getChallengeProgressPercent(challenge, completions); const endedAt = challenge.completedAt ?? challenge.failedAt ?? challenge.cancelledAt; const claimed = challenge.rewardClaimed || claims.some((claim) => claim.challengeId === challenge.id); return <article key={challenge.id} className="rounded-2xl bg-slate-800/70 p-3"><div className="flex justify-between gap-2"><div><p className="font-black">{template?.title ?? challenge.goalId}</p><p className="mt-1 text-xs font-bold text-slate-400">{challenge.startDate} 〜 {challenge.endDate} ・ 終了: {dateTime(endedAt)}</p></div><span className={`h-fit rounded-full px-2 py-1 text-[10px] font-black ${challenge.status === 'completed' ? 'bg-emerald-400/15 text-emerald-200' : challenge.status === 'failed' ? 'bg-rose-400/15 text-rose-200' : 'bg-slate-600 text-slate-200'}`}>{statusLabels[challenge.status]}</span></div><p className="mt-3 text-sm font-bold">最終進捗: {progress} / {challenge.targetValue}{unitLabels[challenge.unit] ?? ''}（{Math.round(percent)}%）</p><p className="mt-1 text-xs font-bold text-slate-400">達成報酬: {claimed ? '獲得済み' : '未獲得'}</p>{['failed', 'cancelled'].includes(challenge.status) && <button type="button" onClick={() => onRetry(challenge)} className="mt-3 rounded-xl bg-sky-300 px-3 py-2 text-xs font-black text-slate-950">もう一度挑戦する</button>}</article>; })}</div>}</section>;
+  return <section className="mt-4 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70"><button type="button" onClick={() => setOpen((value) => !value)} className="flex w-full items-center gap-3 p-4 text-left" aria-expanded={open}><span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-300/10 text-sky-200"><Trophy className="h-5 w-5" /></span><span className="flex-1"><span className="block text-sm font-black">チャレンジ結果</span><span className="block text-xs font-bold text-slate-400">{terminal.length} 件の終了済みチャレンジ</span></span><ChevronDown className={`h-5 w-5 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} /></button>{open && <div className="space-y-3 border-t border-white/10 p-3">{terminal.map((challenge) => { const template = findChallengeTemplate(challenge.goalId); const activityProgress = calculateChallengeProgress(challenge, completions); const progress = challenge.completionSource === 'debug' ? challenge.completedProgress : activityProgress; const percent = challenge.completionSource === 'debug' ? 100 : getChallengeProgressPercent(challenge, completions); const endedAt = challenge.completedAt ?? challenge.failedAt ?? challenge.cancelledAt; const claimed = challenge.rewardClaimed || claims.some((claim) => claim.challengeId === challenge.id); return <article key={challenge.id} className="rounded-2xl bg-slate-800/70 p-3"><div className="flex justify-between gap-2"><div><p className="font-black">{template?.title ?? challenge.goalId}</p><p className="mt-1 text-xs font-bold text-slate-400">{challenge.startDate} 〜 {challenge.endDate} ・ 終了: {dateTime(endedAt)}</p></div><span className={`h-fit rounded-full px-2 py-1 text-[10px] font-black ${challenge.status === 'completed' ? 'bg-emerald-400/15 text-emerald-200' : challenge.status === 'failed' ? 'bg-rose-400/15 text-rose-200' : 'bg-slate-600 text-slate-200'}`}>{statusLabels[challenge.status]}</span></div><p className="mt-3 text-sm font-bold">最終進捗: {progress} / {challenge.targetValue}{unitLabels[challenge.unit] ?? ''}（{Math.round(percent)}%）</p>{challenge.completionSource === 'debug' && <p className="mt-1 text-xs font-bold text-fuchsia-200">開発用：即達成</p>}<p className="mt-1 text-xs font-bold text-slate-400">達成報酬: {claimed ? '獲得済み' : '未獲得'}</p>{['failed', 'cancelled'].includes(challenge.status) && <button type="button" onClick={() => onRetry(challenge)} className="mt-3 rounded-xl bg-sky-300 px-3 py-2 text-xs font-black text-slate-950">もう一度挑戦する</button>}</article>; })}</div>}</section>;
 }
 
 export function ActiveChallenges({ onCreate, onRetry }) {

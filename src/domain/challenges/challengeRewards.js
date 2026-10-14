@@ -1,7 +1,7 @@
 import { CHALLENGE_DIFFICULTY_REWARDS, STANDARD_TASK_REWARD, findChallengeTemplate } from './challengeCatalog.js';
 import { normalizeGameState, STATUS_MAX } from '../game/gameProgress.js';
 import { grantFurnitureReward } from '../shop/productInventory.js';
-import { validateSelectedReward } from './challengeManagement.js';
+import { completeChallenge, validateSelectedReward } from './challengeManagement.js';
 
 const claimIdFor = (challengeId) => `challengeReward:${challengeId}`;
 const isClaim = (claim) => claim && typeof claim.id === 'string' && typeof claim.challengeId === 'string';
@@ -61,6 +61,34 @@ export const claimChallengeCompletionReward = (game, challenges, claims, challen
     challenges: challenges.map((item) => item.id === challengeId ? claimedChallenge : item),
     claims: [...normalizedClaims, claim],
     claim,
+  };
+};
+
+/**
+ * Completes a challenge and claims its selected reward as one pure, atomic
+ * result. The caller commits no state when a reward cannot be claimed.
+ */
+export const completeAndClaimChallengeReward = (game, challenges, claims, challengeId, options = {}) => {
+  const now = options.now ?? new Date();
+  const completed = completeChallenge(challenges, challengeId, now);
+  if (!completed.ok) return { ok: false, reason: completed.reason, game, challenges, claims: normalizeChallengeRewardClaims(claims) };
+
+  const completionSource = options.completionSource === 'debug' ? 'debug' : null;
+  const completedProgress = Number.isFinite(options.completedProgress) && options.completedProgress >= 0
+    ? options.completedProgress
+    : null;
+  const annotatedChallenges = completed.challenges.map((challenge) => challenge.id === challengeId
+    ? { ...challenge, completionSource, completedProgress }
+    : challenge);
+  const claimed = claimChallengeCompletionReward(game, annotatedChallenges, claims, challengeId, now);
+  if (!claimed.ok) return { ok: false, reason: claimed.reason, game, challenges, claims: normalizeChallengeRewardClaims(claims) };
+  return {
+    ok: true,
+    game: claimed.game,
+    challenges: claimed.challenges,
+    claims: claimed.claims,
+    challenge: claimed.challenges.find((challenge) => challenge.id === challengeId),
+    claim: claimed.claim,
   };
 };
 

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { findChallengeTemplate } from './challengeCatalog.js';
 import { startChallenge } from './challengeManagement.js';
-import { applyChallengeActivityReward, claimChallengeCompletionReward } from './challengeRewards.js';
+import { applyChallengeActivityReward, claimChallengeCompletionReward, completeAndClaimChallengeReward } from './challengeRewards.js';
 
 const now = new Date('2026-10-14T12:00:00');
 const moneyReward = (goalId) => ({ type: 'coins', amount: ({ easy: 50, normal: 150, hard: 300 })[findChallengeTemplate(goalId).difficulty] });
@@ -59,4 +59,49 @@ test('invalid furniture rewards and non-completed challenges cannot claim reward
   assert.equal(claimChallengeCompletionReward({}, [active], [], active.id, now).reason, 'not-completed');
   const invalidCompleted = { ...active, status: 'completed' };
   assert.equal(claimChallengeCompletionReward({}, [invalidCompleted], [], invalidCompleted.id, now).ok, false);
+});
+
+test('debug completion claims only the selected reward without creating activity rewards or records', () => {
+  const challenge = makeChallenge('exercise-run');
+  const completed = completeAndClaimChallengeReward(
+    { money: 20, strength: 10 },
+    [challenge],
+    [],
+    challenge.id,
+    { now, completionSource: 'debug', completedProgress: challenge.targetValue },
+  );
+  assert.equal(completed.ok, true);
+  assert.equal(completed.game.money, 320);
+  assert.equal(completed.game.strength, 10);
+  assert.equal(completed.challenge.status, 'completed');
+  assert.equal(completed.challenge.completionSource, 'debug');
+  assert.equal(completed.challenge.completedProgress, challenge.targetValue);
+  assert.equal(completed.claims.length, 1);
+  const repeat = completeAndClaimChallengeReward(completed.game, completed.challenges, completed.claims, challenge.id, { now, completionSource: 'debug' });
+  assert.equal(repeat.ok, false);
+  assert.equal(repeat.game.money, 320);
+});
+
+test('debug completion grants the selected furniture once without changing placed furniture', () => {
+  const challenge = makeChallenge('study-new', { type: 'furniture', productId: 'poco_cushion_001', quantity: 1, priceAtSelection: 80 });
+  const game = { money: 10, ownedFurniture: [{ furnitureId: 'poco_cushion_001', quantity: 1 }], ownedProducts: [{ productId: 'poco_cushion_001', quantity: 1 }], placedFurniture: [{ instanceId: 'placed', furnitureId: 'poco_cushion_001', gridX: 0, gridY: 0 }] };
+  const completed = completeAndClaimChallengeReward(game, [challenge], [], challenge.id, { now, completionSource: 'debug', completedProgress: challenge.targetValue });
+  assert.equal(completed.ok, true);
+  assert.equal(completed.game.money, 10);
+  assert.equal(completed.game.ownedFurniture.find((item) => item.furnitureId === 'poco_cushion_001')?.quantity, 2);
+  assert.equal(completed.game.placedFurniture.length, 1);
+});
+
+test('debug completion handles a streak template without inserting dated activity records', () => {
+  const challenge = makeChallenge('life-cleaning');
+  const completed = completeAndClaimChallengeReward({}, [challenge], [], challenge.id, {
+    now,
+    completionSource: 'debug',
+    completedProgress: challenge.targetValue,
+  });
+  assert.equal(challenge.progressType, 'streak');
+  assert.equal(completed.ok, true);
+  assert.equal(completed.challenge.status, 'completed');
+  assert.equal(completed.challenge.completedProgress, 7);
+  assert.equal(completed.claims.length, 1);
 });
