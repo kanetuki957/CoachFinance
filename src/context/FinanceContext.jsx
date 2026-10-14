@@ -6,7 +6,7 @@ import { purchaseProduct } from '../domain/shop/productInventory';
 import { CHALLENGE_TEMPLATES, assertValidChallengeTemplates, findChallengeTemplate } from '../domain/challenges/challengeCatalog';
 import { cancelChallenge as cancelStoredChallenge, normalizeChallenges, startChallenge as startStoredChallenge } from '../domain/challenges/challengeManagement';
 import { normalizeChallengeCompletions, recordChallengeActivity as recordStoredChallengeActivity } from '../domain/challenges/challengeProgress';
-import { applyChallengeActivityReward, claimChallengeCompletionReward, completeAndClaimChallengeReward, normalizeChallengeRewardClaims } from '../domain/challenges/challengeRewards';
+import { applyChallengeActivityReward, claimChallengeCompletionReward, completeAndClaimChallengeReward, normalizeChallengeRewardClaims, reconcileChallengeRewardClaims } from '../domain/challenges/challengeRewards';
 
 const GoalContext = createContext(null);
 const STORAGE_KEY = 'coach_goal_data_v1';
@@ -357,6 +357,14 @@ export const FinanceProvider = ({ children }) => {
   useEffect(() => {
     challengeRewardClaimsRef.current = challengeRewardClaims;
   }, [challengeRewardClaims]);
+
+  useEffect(() => {
+    const reconciled = reconcileChallengeRewardClaims(challengesRef.current, challengeRewardClaimsRef.current);
+    if (JSON.stringify(reconciled) !== JSON.stringify(challengesRef.current)) {
+      challengesRef.current = reconciled;
+      setChallenges(reconciled);
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ activeGoal, profile, game, challenges, challengeCompletions, challengeRewardClaims }));

@@ -16,6 +16,21 @@ export const normalizeChallengeRewardClaims = (claims) => {
   });
 };
 
+/**
+ * A durable claim is the source of truth that a reward was granted. If an
+ * interrupted older save contains a claim but misses the display flag, repair
+ * only the flag; never infer or grant a missing reward from the flag alone.
+ */
+export const reconcileChallengeRewardClaims = (challenges, claims) => {
+  const normalizedClaims = normalizeChallengeRewardClaims(claims);
+  const claimedIds = new Set(normalizedClaims.map((claim) => claim.id));
+  return (Array.isArray(challenges) ? challenges : []).map((challenge) => (
+    challenge && claimedIds.has(claimIdFor(challenge.id)) && !challenge.rewardClaimed
+      ? { ...challenge, rewardClaimed: true }
+      : challenge
+  ));
+};
+
 const rewardAlreadyEarnedToday = (completions, goalId, localDate) =>
   completions.some((completion) => completion.goalId === goalId && completion.localDate === localDate && (completion.coinsEarned > 0 || completion.statusEarned > 0));
 

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { findChallengeTemplate } from './challengeCatalog.js';
 import { startChallenge } from './challengeManagement.js';
-import { applyChallengeActivityReward, claimChallengeCompletionReward, completeAndClaimChallengeReward } from './challengeRewards.js';
+import { applyChallengeActivityReward, claimChallengeCompletionReward, completeAndClaimChallengeReward, reconcileChallengeRewardClaims } from './challengeRewards.js';
 
 const now = new Date('2026-10-14T12:00:00');
 const moneyReward = (goalId) => ({ type: 'coins', amount: ({ easy: 50, normal: 150, hard: 300 })[findChallengeTemplate(goalId).difficulty] });
@@ -104,4 +104,16 @@ test('debug completion handles a streak template without inserting dated activit
   assert.equal(completed.challenge.status, 'completed');
   assert.equal(completed.challenge.completedProgress, 7);
   assert.equal(completed.claims.length, 1);
+});
+
+test('a durable reward claim repairs only a missing rewardClaimed flag and never grants again', () => {
+  const challenge = { ...makeChallenge('exercise-run'), status: 'completed', rewardClaimed: false };
+  const claims = [{ id: `challengeReward:${challenge.id}`, challengeId: challenge.id, reward: { type: 'coins', amount: 300 }, claimedAt: now.toISOString() }];
+  const reconciled = reconcileChallengeRewardClaims([challenge], claims);
+  assert.equal(reconciled[0].rewardClaimed, true);
+  const repeated = claimChallengeCompletionReward({ money: 100 }, reconciled, claims, challenge.id, now);
+  assert.equal(repeated.reason, 'already-claimed');
+  assert.equal(repeated.game.money, 100);
+  const missingClaim = reconcileChallengeRewardClaims([{ ...challenge, rewardClaimed: true }], []);
+  assert.equal(missingClaim[0].rewardClaimed, true);
 });

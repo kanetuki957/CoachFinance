@@ -59,3 +59,18 @@ test('rejects invalid rewards and safely normalizes bad persisted data', () => {
 test('catalogue still contains all supported challenge templates', () => {
   assert.equal(CHALLENGE_TEMPLATES.length, 15);
 });
+
+test('local calendar boundaries retain the end date and expire on the following day across year and leap-year boundaries', () => {
+  const yearEnd = new Date(2026, 11, 31, 23, 59, 0);
+  const yearChallenge = startChallenge([], findChallengeTemplate('exercise-run'), coinsFor('exercise-run'), { now: yearEnd }).challenge;
+  assert.equal(yearChallenge.startDate, '2026-12-31');
+  assert.equal(yearChallenge.endDate, '2027-01-06');
+  assert.equal(normalizeChallenges([yearChallenge], new Date(2027, 0, 6, 23, 59, 59))[0].status, 'active');
+  assert.equal(normalizeChallenges([yearChallenge], new Date(2027, 0, 7, 0, 0, 0))[0].status, 'failed');
+
+  const leapStart = new Date(2028, 1, 27, 12, 0, 0);
+  const leapChallenge = startChallenge([], findChallengeTemplate('life-cleaning'), coinsFor('life-cleaning'), { now: leapStart }).challenge;
+  assert.equal(leapChallenge.endDate, '2028-03-04');
+  assert.equal(normalizeChallenges([leapChallenge], new Date(2028, 2, 4, 23, 59, 59))[0].status, 'active');
+  assert.equal(normalizeChallenges([leapChallenge], new Date(2028, 2, 5, 0, 0, 0))[0].status, 'failed');
+});
