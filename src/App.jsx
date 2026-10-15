@@ -205,7 +205,7 @@ const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onOpenHistory, o
 
   return (
     <div className="min-h-[100dvh] overflow-x-hidden bg-[#10182b] text-slate-100">
-      <main className="mx-auto w-full max-w-md px-5 pb-28 pt-5">
+      <main className="mx-auto w-full max-w-md px-5 pb-52 pt-5 sm:pb-36 lg:pb-28">
         <header className="mb-5 flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-black uppercase tracking-[0.24em] text-amber-300">Daily quest</p>
@@ -327,9 +327,7 @@ const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onOpenHistory, o
         <ActiveChallenges onCreate={onOpenChallenges} onRetry={onRetryChallenge} />
       </main>
 
-      <TransactionForm openOnMount={openGoalSelector} />
       {import.meta.env.DEV && <button type="button" onClick={() => addDebugMoney(1000)} className="fixed right-4 top-4 z-40 rounded-lg border border-fuchsia-300/50 bg-fuchsia-500/20 px-3 py-2 text-xs font-black text-fuchsia-100 backdrop-blur" aria-label="デバッグ用に1000コインを追加">DEBUG +1,000</button>}
-      {activeGoal && <button type="button" onClick={() => setIsFurnitureInventoryOpen(true)} className="fixed bottom-[4.75rem] left-6 z-40 flex items-center gap-2 rounded-full bg-slate-100 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-white" aria-label="家具インベントリを開く"><Package className="h-5 w-5" />家具</button>}
       <FurnitureInventory
         open={isFurnitureInventoryOpen}
         onClose={() => setIsFurnitureInventoryOpen(false)}
@@ -351,7 +349,6 @@ const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onOpenHistory, o
           <button type="button" disabled={!available} onClick={confirmFurniturePlacement} className="ml-auto rounded-xl bg-amber-300 px-5 py-3 text-xs font-black text-slate-950 disabled:bg-slate-600 disabled:text-slate-300">OK</button>
         </div>;
       })()}
-      <button onClick={onOpenShop} className="fixed bottom-6 left-6 z-40 flex items-center gap-2 rounded-full bg-amber-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/40 transition hover:scale-105 hover:bg-amber-200" aria-label="ショップを開く"><Store className="h-5 w-5" />SHOP</button>
       {isMemoOpen && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center">
           <div className="w-full max-w-md rounded-3xl border border-white/10 bg-slate-900 p-5 shadow-2xl">
@@ -366,8 +363,19 @@ const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onOpenHistory, o
           </div>
         </div>
       )}
-      <button onClick={onOpenHistory} className="fixed bottom-[5.25rem] right-6 z-40 flex items-center gap-2 rounded-full border border-white/15 bg-slate-900/95 px-4 py-3 text-sm font-black text-slate-100 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-slate-800" aria-label="成長の記録を開く"><Trophy className="h-5 w-5 text-amber-300" />記録</button>
-      <button onClick={onOpenChallenges} className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-sky-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-sky-200" aria-label="チャレンジを作成"><Target className="h-5 w-5" />CHALLENGE</button>
+      <nav className="fixed bottom-5 left-4 right-4 z-40 flex flex-wrap items-center justify-between gap-2" aria-label="主要操作">
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={onOpenShop} className="flex items-center gap-2 rounded-full bg-amber-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/40 transition hover:scale-105 hover:bg-amber-200" aria-label="ショップを開く"><Store className="h-5 w-5" />SHOP</button>
+          {activeGoal && <button type="button" onClick={() => setIsFurnitureInventoryOpen(true)} className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-white" aria-label="家具インベントリを開く"><Package className="h-5 w-5" />家具</button>}
+        </div>
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+          <TransactionForm openOnMount={openGoalSelector} buttonClassName="flex shrink-0 items-center gap-2 rounded-full bg-emerald-400 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-emerald-950/60 transition hover:scale-105 hover:bg-emerald-300" buttonLabel="今日のタスク" />
+          <div className="flex shrink-0 items-center gap-2">
+            <button onClick={onOpenHistory} className="flex items-center gap-2 rounded-full border border-white/15 bg-slate-900/95 px-4 py-3 text-sm font-black text-slate-100 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-slate-800" aria-label="成長の記録を開く"><Trophy className="h-5 w-5 text-amber-300" />記録</button>
+            <button onClick={onOpenChallenges} className="flex items-center gap-2 rounded-full bg-sky-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-sky-200" aria-label="チャレンジを作成"><Target className="h-5 w-5" />CHALLENGE</button>
+          </div>
+        </div>
+      </nav>
       <Analytics />
     </div>
   );

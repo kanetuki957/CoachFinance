@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronRight, Plus, X } from 'lucide-react';
 import { GOAL_CATEGORIES, useFinance } from '../context/FinanceContext';
 
-export const TransactionForm = ({ openOnMount = false }) => {
+const floatingButtonClassName = 'fixed bottom-6 right-6 z-40 rounded-full bg-emerald-400 p-4 text-slate-950 shadow-lg shadow-emerald-950/60 transition hover:scale-105 hover:bg-emerald-300';
+
+export const TransactionForm = ({ openOnMount = false, buttonClassName = floatingButtonClassName, buttonLabel = null }) => {
   const { selectGoal } = useFinance();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -25,13 +28,14 @@ export const TransactionForm = ({ openOnMount = false }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 rounded-full bg-emerald-400 p-4 text-slate-950 shadow-lg shadow-emerald-950/60 transition hover:scale-105 hover:bg-emerald-300"
+        className={buttonClassName}
         aria-label="目標を追加"
       >
         <Plus className="h-6 w-6 stroke-[3]" />
+        {buttonLabel && <span>{buttonLabel}</span>}
       </button>
 
-      {isOpen && (
+      {isOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center">
           <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-5 text-white shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
@@ -76,7 +80,7 @@ export const TransactionForm = ({ openOnMount = false }) => {
             )}
           </div>
         </div>
-      )}
+      , document.body)}
     </>
   );
 };
