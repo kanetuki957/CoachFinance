@@ -8,6 +8,65 @@ body {
   background-color: #020617;
 }
 
+/* ===== ホーム：ステータスエリア調整 =====
+   ホーム上部のキャラクター／筋力・知識・財力カードは、ここだけを編集して調整できます。 */
+.home-screen-home {
+  --home-overview-gap: clamp(0.5rem, 2vw, 0.75rem);
+  --home-status-panel-padding: clamp(0.5rem, 2vw, 0.75rem);
+  --home-character-width: clamp(3rem, 14vw, 3.5rem);
+  --home-character-height: clamp(3rem, 14vw, 3.5rem);
+  --home-character-image-size: clamp(2.25rem, 10vw, 2.75rem);
+  --home-level-size: 0.5rem;
+  --home-character-stat-gap: clamp(0.375rem, 1.5vw, 0.5rem);
+  --home-stat-gap: clamp(0.25rem, 1vw, 0.375rem);
+  --home-stat-width: clamp(2.125rem, 10vw, 2.5rem);
+  --home-stat-height: clamp(2.5rem, 11vw, 2.75rem);
+  /* 個別に変えたい場合だけ、この3つを上書きしてください。 */
+  --home-strength-stat-width: var(--home-stat-width);
+  --home-knowledge-stat-width: var(--home-stat-width);
+  --home-wealth-stat-width: var(--home-stat-width);
+  --home-stat-padding-x: 0.125rem;
+  --home-stat-padding-y: 0.375rem;
+  --home-stat-label-size: 0.5rem;
+  --home-stat-value-size: 0.75rem;
+  --home-goal-padding: clamp(0.5rem, 2vw, 0.75rem);
+}
+
+.home-screen-home .home-overview { gap: var(--home-overview-gap); }
+.home-screen-home .home-status-panel { padding: var(--home-status-panel-padding); }
+.home-screen-home .home-status-row {
+  display: grid;
+  grid-template-columns: minmax(0, var(--home-character-width)) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--home-character-stat-gap);
+}
+.home-screen-home .home-character-card {
+  width: min(100%, var(--home-character-width));
+  height: var(--home-character-height);
+}
+.home-screen-home .home-character-image { height: min(72%, var(--home-character-image-size)); }
+.home-screen-home .home-character-level { padding-bottom: 0.2rem; font-size: var(--home-level-size); line-height: 1; }
+.home-screen-home .home-stat-list {
+  display: grid;
+  min-width: 0;
+  grid-template-columns:
+    minmax(0, var(--home-strength-stat-width))
+    minmax(0, var(--home-knowledge-stat-width))
+    minmax(0, var(--home-wealth-stat-width));
+  gap: var(--home-stat-gap);
+}
+.home-screen-home .home-stat-card {
+  min-width: 0;
+  min-height: var(--home-stat-height);
+  padding: var(--home-stat-padding-y) var(--home-stat-padding-x);
+}
+.home-screen-home .home-stat-card:nth-child(1) { min-height: var(--home-strength-stat-height, var(--home-stat-height)); }
+.home-screen-home .home-stat-card:nth-child(2) { min-height: var(--home-knowledge-stat-height, var(--home-stat-height)); }
+.home-screen-home .home-stat-card:nth-child(3) { min-height: var(--home-wealth-stat-height, var(--home-stat-height)); }
+.home-screen-home .home-stat-label { font-size: var(--home-stat-label-size); line-height: 1.1; }
+.home-screen-home .home-stat-value { margin-top: 0.125rem; font-size: var(--home-stat-value-size); line-height: 1.1; }
+.home-screen-home .home-goal-card { padding: var(--home-goal-padding); }
+
 /* App-level navigation: one stable, safe-area-aware bar across every screen. */
 .app-bottom-nav {
   position: fixed;

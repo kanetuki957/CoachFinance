@@ -137,21 +137,21 @@ const SelectedGoal = ({ goal }) => (
 );
 
 const HomeOverview = ({ game, goal, onOpenQuest }) => (
-  <section className="grid grid-cols-[minmax(0,1.15fr)_minmax(0,.85fr)] gap-3" aria-label="プレイヤーと現在の目標">
-    <article className="min-w-0 rounded-3xl border border-white/10 bg-slate-900/80 p-3 shadow-xl shadow-slate-950/25">
-      <div className="flex items-center gap-3">
-        <div className="flex h-14 w-14 shrink-0 items-end justify-center overflow-hidden rounded-2xl border border-amber-300/25 bg-[#263c65]">
-          <img src={companionCharacter} alt="現在のキャラクター" className="h-12 w-auto object-contain" />
+  <section className="home-overview grid grid-cols-[minmax(0,1.4fr)_minmax(0,.9fr)]" aria-label="プレイヤーと現在の目標">
+    <article className="home-status-panel min-w-0 rounded-2xl border border-white/10 bg-slate-900/80 shadow-xl shadow-slate-950/25">
+      <div className="home-status-row">
+        <div className="home-character-card flex shrink-0 flex-col items-center justify-end overflow-hidden rounded-xl border border-amber-300/25 bg-[#263c65]">
+          <img src={companionCharacter} alt="現在のキャラクター" className="home-character-image w-auto object-contain" />
+          <span className="home-character-level font-black text-amber-200">Lv.{game.level ?? 1}</span>
         </div>
-        <div className="min-w-0"><p className="text-[10px] font-black tracking-[.16em] text-amber-300">PLAYER STATUS</p><p className="mt-1 text-sm font-black text-slate-50">Lv. {game.level ?? 1}</p></div>
+        <dl className="home-stat-list min-w-0 text-center">
+          {[['筋力', game.strength], ['知識', game.knowledge], ['財力', game.wealth]].map(([label, value]) => <div key={label} className="home-stat-card min-w-0 rounded-lg bg-slate-800/90"><dt className="home-stat-label truncate font-bold text-slate-400">{label}</dt><dd className="home-stat-value font-black text-amber-200">{value ?? 0}</dd></div>)}
+        </dl>
       </div>
-      <dl className="mt-3 grid grid-cols-3 gap-1 text-center">
-        {[['筋力', game.strength], ['知識', game.knowledge], ['財力', game.wealth]].map(([label, value]) => <div key={label} className="rounded-xl bg-slate-800/90 px-1 py-2"><dt className="text-[9px] font-bold text-slate-400">{label}</dt><dd className="mt-0.5 text-sm font-black text-amber-200">{value ?? 0}</dd></div>)}
-      </dl>
     </article>
-    <article className="flex min-w-0 flex-col justify-between rounded-3xl border border-amber-300/20 bg-gradient-to-br from-amber-300/15 to-slate-900 p-3 shadow-xl shadow-slate-950/25">
-      <div><p className="text-[10px] font-black tracking-[.14em] text-amber-300">現在の目標</p>{goal ? <><p className="mt-2 text-xs font-bold text-amber-100">{goal.categoryName}</p><p className="mt-1 break-words text-sm font-black leading-snug text-slate-50">{goal.title}</p></> : <p className="mt-3 text-sm font-black leading-snug text-slate-100">目標を設定しよう</p>}</div>
-      {!goal && <button type="button" onClick={onOpenQuest} className="mt-3 rounded-xl bg-amber-300 px-2 py-2 text-xs font-black text-slate-950">クエストへ</button>}
+    <article className="home-goal-card flex min-w-0 flex-col justify-between rounded-xl border border-amber-300/25 bg-gradient-to-br from-amber-300/15 to-slate-900 shadow-lg shadow-slate-950/20">
+      <div><p className="text-[9px] font-black tracking-[.1em] text-amber-300 sm:text-[10px]">現在の目標</p>{goal ? <p className="mt-1 break-words text-xs font-black leading-snug text-slate-50 sm:text-sm">{goal.title}</p> : <p className="mt-2 text-xs font-black leading-snug text-slate-100">目標を設定しよう</p>}</div>
+      {!goal && <button type="button" onClick={onOpenQuest} className="mt-2 rounded-lg bg-amber-300 px-2 py-1.5 text-[10px] font-black text-slate-950">クエストへ</button>}
     </article>
   </section>
 );
@@ -239,7 +239,7 @@ const Home = ({
   return (
     <div className={`home-screen home-screen-${section} min-h-[100dvh] overflow-x-hidden bg-[#10182b] text-slate-100`}>
       <main className="mx-auto w-full max-w-md px-5 pb-52 pt-5 sm:pb-36 lg:pb-28">
-        <header className="mb-5 flex items-center justify-between gap-3">
+        {isQuest && <header className="mb-5 flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] font-black uppercase tracking-[0.24em] text-amber-300">Daily quest</p>
             <h1 className="mt-1 text-2xl font-black tracking-tight">今回の目標</h1>
@@ -257,7 +257,7 @@ const Home = ({
               {isBgmPlaying ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             </button>
           </div>
-        </header>
+        </header>}
 
         {!isQuest && <HomeOverview game={game} goal={activeGoal} onOpenQuest={() => onNavigate('quest')} />}
         {isQuest && <PlayerStatusPanel game={game} />}
