@@ -2,8 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import {
   Check,
+  BarChart3,
   ChevronDown,
   ChevronRight,
+  ClipboardCheck,
+  Home as HomeIcon,
   LockKeyhole,
   Package,
   RotateCw,
@@ -133,7 +136,15 @@ const SelectedGoal = ({ goal }) => (
   </section>
 );
 
-const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onOpenHistory, onRetryChallenge }) => {
+const Home = ({
+  section = 'home',
+  openGoalSelector,
+  // The former floating controls remain hidden while their JSX is retired.
+  // Keep their callbacks defined so hidden JSX cannot abort the initial render.
+  onOpenShop = () => {},
+  onOpenChallenges = () => {},
+  onOpenHistory = () => {},
+}) => {
   const { activeGoal, completeTask, game, addDebugMoney, placeOwnedFurniture, saveFurniturePlacement, removePlacedFurniture } = useFinance();
   const [isMemoOpen, setIsMemoOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -144,6 +155,7 @@ const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onOpenHistory, o
   const [isFurnitureInventoryOpen, setIsFurnitureInventoryOpen] = useState(false);
   const [furniturePlacement, setFurniturePlacement] = useState(null);
   const bgmPlayer = useRef(null);
+  const isQuest = section === 'quest';
 
   useEffect(() => () => bgmPlayer.current?.dispose(), []);
 
@@ -204,7 +216,7 @@ const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onOpenHistory, o
   };
 
   return (
-    <div className="min-h-[100dvh] overflow-x-hidden bg-[#10182b] text-slate-100">
+    <div className={`home-screen home-screen-${section} min-h-[100dvh] overflow-x-hidden bg-[#10182b] text-slate-100`}>
       <main className="mx-auto w-full max-w-md px-5 pb-52 pt-5 sm:pb-36 lg:pb-28">
         <header className="mb-5 flex items-center justify-between gap-3">
           <div>
@@ -227,6 +239,8 @@ const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onOpenHistory, o
         </header>
 
         <PlayerStatusPanel game={game} />
+        {isQuest && <div className="mt-4"><TransactionForm openOnMount={openGoalSelector} buttonClassName="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-emerald-950/30" buttonLabel="目標・今日のタスクを選ぶ" /></div>}
+        {!isQuest && <button type="button" onClick={() => setIsFurnitureInventoryOpen(true)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black text-slate-100"><Package className="h-5 w-5 text-amber-300" />家具を配置・管理</button>}
 
         {activeGoal ? (
           <>
@@ -263,7 +277,7 @@ const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onOpenHistory, o
               </div>
             )}
 
-            <section className="mt-5">
+            {isQuest && <section className="mt-5">
               <div className="flex items-end justify-between">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">Today&apos;s tasks</p>
@@ -296,9 +310,9 @@ const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onOpenHistory, o
                   );
                 })}
               </div>
-            </section>
+            </section>}
 
-            <section className="mt-5 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70">
+            {isQuest && <section className="mt-5 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70">
               <button onClick={() => setIsHistoryOpen((open) => !open)} className="flex w-full items-center gap-3 p-4 text-left" aria-expanded={isHistoryOpen}>
                 <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-300/10 text-amber-300"><Trophy className="h-5 w-5" /></span>
                 <span className="flex-1"><span className="block text-sm font-black">達成のきろく</span><span className="mt-0.5 block text-xs font-bold text-slate-400">全 {completedCount} / {allTasks.length} クエスト完了</span></span>
@@ -315,16 +329,20 @@ const Home = ({ openGoalSelector, onOpenShop, onOpenChallenges, onOpenHistory, o
                   )) : <p className="p-3 text-center text-sm font-bold text-slate-400">最初のクエストを達成しよう！</p>}
                 </div>
               )}
-            </section>
+            </section>}
           </>
         ) : (
-          <section className="mt-16 rounded-[2rem] border border-dashed border-slate-600 bg-slate-900/70 p-8 text-center">
+          <>
+          {!isQuest && <section className="mt-4 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-[#263c65] to-[#172640] px-5 pb-5 pt-4 shadow-2xl shadow-slate-950/30">
+            <Companion isComplete={false} progress={0} placedFurniture={game.placedFurniture} placement={furniturePlacement} onPlacementMove={(position) => setFurniturePlacement((current) => current ? { ...current, ...position } : current)} onEditFurniture={(item) => { const product = getProductById(item.furnitureId); if (product) setFurniturePlacement({ ...item, product }); }} />
+          </section>}
+          {isQuest && <section className="mt-16 rounded-[2rem] border border-dashed border-slate-600 bg-slate-900/70 p-8 text-center">
             <div className="text-5xl">🗺️</div>
             <h2 className="mt-4 text-xl font-black">冒険の目標を決めよう</h2>
             <p className="mt-3 text-sm font-bold leading-relaxed text-slate-400">右下の＋ボタンから目標を選ぶと、毎日のクエストが始まります。</p>
-          </section>
+          </section>}
+          </>
         )}
-        <ActiveChallenges onCreate={onOpenChallenges} onRetry={onRetryChallenge} />
       </main>
 
       {import.meta.env.DEV && <button type="button" onClick={() => addDebugMoney(1000)} className="fixed right-4 top-4 z-40 rounded-lg border border-fuchsia-300/50 bg-fuchsia-500/20 px-3 py-2 text-xs font-black text-fuchsia-100 backdrop-blur" aria-label="デバッグ用に1000コインを追加">DEBUG +1,000</button>}
@@ -385,6 +403,30 @@ export default function App() {
   return <FinanceProvider><AppContent /></FinanceProvider>;
 }
 
+const tabs = [
+  { id: 'home', label: 'ホーム', Icon: HomeIcon },
+  { id: 'quest', label: 'クエスト', Icon: ClipboardCheck },
+  { id: 'challenge', label: 'チャレンジ', Icon: Target },
+  { id: 'growth', label: '成長記録', Icon: BarChart3 },
+  { id: 'shop', label: 'ショップ', Icon: Store },
+];
+
+function BottomNavigation({ active, onChange }) {
+  return <nav className="app-bottom-nav" aria-label="メインナビゲーション">
+    {tabs.map(({ id, label, Icon }) => <button key={id} type="button" onClick={() => onChange(id)} aria-current={active === id ? 'page' : undefined} className={`app-bottom-nav__item ${active === id ? 'is-active' : ''}`}>
+      <Icon aria-hidden="true" className="h-5 w-5" />
+      <span>{label}</span>
+    </button>)}
+  </nav>;
+}
+
+function ChallengeHub({ onCreate, onRetry }) {
+  return <div className="min-h-[100dvh] bg-[#10182b] text-slate-100"><main className="mx-auto w-full max-w-md px-5 pb-28 pt-5">
+    <header><p className="text-xs font-black tracking-[.2em] text-amber-300">CHALLENGE</p><h1 className="mt-1 text-2xl font-black">チャレンジ</h1><p className="mt-3 text-sm font-bold leading-relaxed text-slate-400">進行中の挑戦を記録し、達成・中断・再挑戦をここで管理できます。</p></header>
+    <ActiveChallenges onCreate={onCreate} onRetry={onRetry} />
+  </main></div>;
+}
+
 function AppContent() {
   const { profile, challenges } = useFinance();
   const [completedNow, setCompletedNow] = useState(false);
@@ -392,9 +434,14 @@ function AppContent() {
   const [retryChallengeId, setRetryChallengeId] = useState(null);
   const retrySource = challenges.find((challenge) => challenge.id === retryChallengeId) ?? null;
   if (!profile && !completedNow) return <Onboarding onComplete={() => setCompletedNow(true)} />;
-  if (screen === 'shop') return <Shop onBack={() => setScreen('home')} />;
-  if (screen === 'challenge-create') return <ChallengeCreator onBack={() => setScreen('home')} />;
-  if (screen === 'challenge-retry' && retrySource) return <ChallengeCreator retrySource={retrySource} onBack={() => setScreen('home')} />;
-  if (screen === 'growth-history') return <GrowthHistory onBack={() => setScreen('home')} />;
-  return <Home openGoalSelector={completedNow} onOpenShop={() => setScreen('shop')} onOpenChallenges={() => setScreen('challenge-create')} onOpenHistory={() => setScreen('growth-history')} onRetryChallenge={(challenge) => { setRetryChallengeId(challenge.id); setScreen('challenge-retry'); }} />;
+
+  let page;
+  if (screen === 'challenge-create') page = <ChallengeCreator onBack={() => setScreen('challenge')} />;
+  else if (screen === 'challenge-retry' && retrySource) page = <ChallengeCreator retrySource={retrySource} onBack={() => setScreen('challenge')} />;
+  else if (screen === 'growth') page = <GrowthHistory onBack={() => setScreen('home')} />;
+  else if (screen === 'shop') page = <Shop onBack={() => setScreen('home')} />;
+  else if (screen === 'challenge') page = <ChallengeHub onCreate={() => setScreen('challenge-create')} onRetry={(challenge) => { setRetryChallengeId(challenge.id); setScreen('challenge-retry'); }} />;
+  else page = <Home section={screen} openGoalSelector={false} />;
+
+  return <div className="app-shell">{page}<BottomNavigation active={screen === 'challenge-create' || screen === 'challenge-retry' ? 'challenge' : screen} onChange={setScreen} /></div>;
 }
