@@ -136,9 +136,30 @@ const SelectedGoal = ({ goal }) => (
   </section>
 );
 
+const HomeOverview = ({ game, goal, onOpenQuest }) => (
+  <section className="grid grid-cols-[minmax(0,1.15fr)_minmax(0,.85fr)] gap-3" aria-label="プレイヤーと現在の目標">
+    <article className="min-w-0 rounded-3xl border border-white/10 bg-slate-900/80 p-3 shadow-xl shadow-slate-950/25">
+      <div className="flex items-center gap-3">
+        <div className="flex h-14 w-14 shrink-0 items-end justify-center overflow-hidden rounded-2xl border border-amber-300/25 bg-[#263c65]">
+          <img src={companionCharacter} alt="現在のキャラクター" className="h-12 w-auto object-contain" />
+        </div>
+        <div className="min-w-0"><p className="text-[10px] font-black tracking-[.16em] text-amber-300">PLAYER STATUS</p><p className="mt-1 text-sm font-black text-slate-50">Lv. {game.level ?? 1}</p></div>
+      </div>
+      <dl className="mt-3 grid grid-cols-3 gap-1 text-center">
+        {[['筋力', game.strength], ['知識', game.knowledge], ['財力', game.wealth]].map(([label, value]) => <div key={label} className="rounded-xl bg-slate-800/90 px-1 py-2"><dt className="text-[9px] font-bold text-slate-400">{label}</dt><dd className="mt-0.5 text-sm font-black text-amber-200">{value ?? 0}</dd></div>)}
+      </dl>
+    </article>
+    <article className="flex min-w-0 flex-col justify-between rounded-3xl border border-amber-300/20 bg-gradient-to-br from-amber-300/15 to-slate-900 p-3 shadow-xl shadow-slate-950/25">
+      <div><p className="text-[10px] font-black tracking-[.14em] text-amber-300">現在の目標</p>{goal ? <><p className="mt-2 text-xs font-bold text-amber-100">{goal.categoryName}</p><p className="mt-1 break-words text-sm font-black leading-snug text-slate-50">{goal.title}</p></> : <p className="mt-3 text-sm font-black leading-snug text-slate-100">目標を設定しよう</p>}</div>
+      {!goal && <button type="button" onClick={onOpenQuest} className="mt-3 rounded-xl bg-amber-300 px-2 py-2 text-xs font-black text-slate-950">クエストへ</button>}
+    </article>
+  </section>
+);
+
 const Home = ({
   section = 'home',
   openGoalSelector,
+  onNavigate = () => {},
   // The former floating controls remain hidden while their JSX is retired.
   // Keep their callbacks defined so hidden JSX cannot abort the initial render.
   onOpenShop = () => {},
@@ -238,36 +259,37 @@ const Home = ({
           </div>
         </header>
 
-        <PlayerStatusPanel game={game} />
+        {!isQuest && <HomeOverview game={game} goal={activeGoal} onOpenQuest={() => onNavigate('quest')} />}
+        {isQuest && <PlayerStatusPanel game={game} />}
         {isQuest && <div className="mt-4"><TransactionForm openOnMount={openGoalSelector} buttonClassName="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-emerald-950/30" buttonLabel="目標・今日のタスクを選ぶ" /></div>}
-        {!isQuest && <button type="button" onClick={() => setIsFurnitureInventoryOpen(true)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black text-slate-100"><Package className="h-5 w-5 text-amber-300" />家具を配置・管理</button>}
 
         {activeGoal ? (
           <>
             <section className="relative mt-4 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-[#263c65] to-[#172640] px-5 pb-5 pt-4 shadow-2xl shadow-slate-950/30" aria-label="キャラクターの部屋">
               <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-amber-300/10 blur-3xl" />
-              <div className="relative flex items-start justify-between">
+              {isQuest && <div className="relative flex items-start justify-between">
                 <div>
                   <p className="text-[11px] font-black uppercase tracking-[0.18em] text-blue-200">Today&apos;s adventure</p>
                   <p className="mt-1 text-sm font-bold text-slate-300">あと <span className="text-xl font-black text-amber-300">{remainingToday}</span> 個で今日のクエスト完了</p>
                 </div>
                 <Sparkles className="h-5 w-5 text-amber-300" />
-              </div>
+              </div>}
 
               <Companion isComplete={isTodayComplete} progress={todayProgress} placedFurniture={game.placedFurniture} placement={furniturePlacement} onPlacementMove={(position) => setFurniturePlacement((current) => current ? { ...current, ...position } : current)} onEditFurniture={(item) => { const product = getProductById(item.furnitureId); if (product) setFurniturePlacement({ ...item, product }); }} />
 
               <div className="relative mt-2">
                 <div className="flex items-center justify-between text-xs font-bold text-blue-100">
                   <span>今日の進捗</span>
-                  <span>{completedCount} / {allTasks.length} TASKS</span>
+                  <span>{completedToday} / {tasks.length} TASKS</span>
                 </div>
                 <div className="mt-2 h-4 overflow-hidden rounded-full border border-white/10 bg-slate-950/45 p-1">
-                  <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-200 transition-all duration-700" style={{ width: `${totalProgress}%` }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-200 transition-all duration-700" style={{ width: `${todayProgress}%` }} />
                 </div>
               </div>
             </section>
 
-            <SelectedGoal goal={activeGoal} />
+            {!isQuest && <button type="button" onClick={() => setIsFurnitureInventoryOpen(true)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-300/35 bg-amber-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/30 transition hover:bg-amber-200"><Package className="h-5 w-5" />家具を配置・管理</button>}
+            {isQuest && <SelectedGoal goal={activeGoal} />}
 
             {lastReward && (
               <div className="mt-3 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-100" role="status">
@@ -277,10 +299,10 @@ const Home = ({
               </div>
             )}
 
-            {isQuest && <section className="mt-5">
+            <section className="mt-5">
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-300">Today&apos;s tasks</p>
+                  <p className="text-xs font-black tracking-[0.18em] text-amber-300">今日やること</p>
                   <h2 className="mt-1 text-xl font-black">今日やること</h2>
                 </div>
                 <span className={`rounded-full px-3 py-1.5 text-xs font-black ${isTodayComplete ? 'bg-emerald-400/15 text-emerald-300' : 'bg-amber-300/15 text-amber-200'}`}>
@@ -298,7 +320,7 @@ const Home = ({
                         <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-sm font-black ${isDone ? 'bg-emerald-400 text-slate-950' : 'bg-amber-300 text-slate-950'}`}>
                           {isDone ? <Check className="h-5 w-5 stroke-[3]" /> : String(index + 1).padStart(2, '0')}
                         </span>
-                        <p className={`flex-1 text-[15px] font-bold leading-relaxed ${isDone ? 'text-emerald-100 line-through decoration-emerald-400/60' : 'text-slate-50'}`}>{task.title}</p>
+                        <div className="min-w-0 flex-1"><p className={`text-[15px] font-bold leading-relaxed ${isDone ? 'text-emerald-100 line-through decoration-emerald-400/60' : 'text-slate-50'}`}>{task.title}</p>{task.description && <p className="mt-1 text-xs font-medium text-slate-400">{task.description}</p>}</div>
                         {isCurrent ? (
                           <button onClick={() => openMemo(task)} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-300 text-slate-950 shadow-lg shadow-amber-400/15 transition hover:scale-105 hover:bg-amber-200" aria-label={`Complete ${task.title}`} title="Complete">
                             <Check className="h-6 w-6 stroke-[3]" />
@@ -310,9 +332,9 @@ const Home = ({
                   );
                 })}
               </div>
-            </section>}
+            </section>
 
-            {isQuest && <section className="mt-5 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70">
+            <section className="mt-5 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70">
               <button onClick={() => setIsHistoryOpen((open) => !open)} className="flex w-full items-center gap-3 p-4 text-left" aria-expanded={isHistoryOpen}>
                 <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-300/10 text-amber-300"><Trophy className="h-5 w-5" /></span>
                 <span className="flex-1"><span className="block text-sm font-black">達成のきろく</span><span className="mt-0.5 block text-xs font-bold text-slate-400">全 {completedCount} / {allTasks.length} クエスト完了</span></span>
@@ -329,13 +351,15 @@ const Home = ({
                   )) : <p className="p-3 text-center text-sm font-bold text-slate-400">最初のクエストを達成しよう！</p>}
                 </div>
               )}
-            </section>}
+            </section>
           </>
         ) : (
           <>
           {!isQuest && <section className="mt-4 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-[#263c65] to-[#172640] px-5 pb-5 pt-4 shadow-2xl shadow-slate-950/30">
             <Companion isComplete={false} progress={0} placedFurniture={game.placedFurniture} placement={furniturePlacement} onPlacementMove={(position) => setFurniturePlacement((current) => current ? { ...current, ...position } : current)} onEditFurniture={(item) => { const product = getProductById(item.furnitureId); if (product) setFurniturePlacement({ ...item, product }); }} />
           </section>}
+          {!isQuest && <button type="button" onClick={() => setIsFurnitureInventoryOpen(true)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-300/35 bg-amber-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/30 transition hover:bg-amber-200"><Package className="h-5 w-5" />家具を配置・管理</button>}
+          {!isQuest && <section className="mt-5 rounded-3xl border border-dashed border-slate-600 bg-slate-900/70 p-5 text-center"><p className="text-xs font-black tracking-[.18em] text-amber-300">今日やること</p><p className="mt-2 text-sm font-bold text-slate-300">目標を設定すると、今日のタスクがここに表示されます。</p><button type="button" onClick={() => onNavigate('quest')} className="mt-4 rounded-xl bg-amber-300 px-4 py-2.5 text-sm font-black text-slate-950">クエストへ</button></section>}
           {isQuest && <section className="mt-16 rounded-[2rem] border border-dashed border-slate-600 bg-slate-900/70 p-8 text-center">
             <div className="text-5xl">🗺️</div>
             <h2 className="mt-4 text-xl font-black">冒険の目標を決めよう</h2>
@@ -381,7 +405,7 @@ const Home = ({
           </div>
         </div>
       )}
-      <nav className="fixed bottom-5 left-4 right-4 z-40 flex flex-wrap items-center justify-between gap-2" aria-label="主要操作">
+      {false && <nav className="fixed bottom-5 left-4 right-4 z-40 flex flex-wrap items-center justify-between gap-2" aria-label="主要操作">
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={onOpenShop} className="flex items-center gap-2 rounded-full bg-amber-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/40 transition hover:scale-105 hover:bg-amber-200" aria-label="ショップを開く"><Store className="h-5 w-5" />SHOP</button>
           {activeGoal && <button type="button" onClick={() => setIsFurnitureInventoryOpen(true)} className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-white" aria-label="家具インベントリを開く"><Package className="h-5 w-5" />家具</button>}
@@ -393,7 +417,7 @@ const Home = ({
             <button onClick={onOpenChallenges} className="flex items-center gap-2 rounded-full bg-sky-300 px-4 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-slate-950/40 transition hover:scale-105 hover:bg-sky-200" aria-label="チャレンジを作成"><Target className="h-5 w-5" />CHALLENGE</button>
           </div>
         </div>
-      </nav>
+      </nav>}
       <Analytics />
     </div>
   );
@@ -441,7 +465,14 @@ function AppContent() {
   else if (screen === 'growth') page = <GrowthHistory onBack={() => setScreen('home')} />;
   else if (screen === 'shop') page = <Shop onBack={() => setScreen('home')} />;
   else if (screen === 'challenge') page = <ChallengeHub onCreate={() => setScreen('challenge-create')} onRetry={(challenge) => { setRetryChallengeId(challenge.id); setScreen('challenge-retry'); }} />;
-  else page = <Home section={screen} openGoalSelector={false} />;
+  else page = <Home
+    section={screen}
+    openGoalSelector={false}
+    onNavigate={setScreen}
+    onOpenShop={() => setScreen('shop')}
+    onOpenChallenges={() => setScreen('challenge-create')}
+    onOpenHistory={() => setScreen('growth')}
+  />;
 
   return <div className="app-shell">{page}<BottomNavigation active={screen === 'challenge-create' || screen === 'challenge-retry' ? 'challenge' : screen} onChange={setScreen} /></div>;
 }
