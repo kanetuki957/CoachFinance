@@ -1,5 +1,5 @@
 export const STATUS_KEYS = ['knowledge', 'wealth', 'strength'];
-export const STATUS_MAX = 100;
+export const STATUS_MAX = 1000;
 export const DEFAULT_GAME_STATE = Object.freeze({
   knowledge: 0,
   wealth: 0,

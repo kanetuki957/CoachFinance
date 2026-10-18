@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/react';
 import {
   Check,
   BarChart3,
+  CircleDollarSign,
   ChevronDown,
   ChevronRight,
   ClipboardCheck,
@@ -137,6 +138,7 @@ const SelectedGoal = ({ goal }) => (
 );
 
 const HomeOverview = ({ game, goal, onOpenQuest }) => (
+  <>
   <section className="home-overview grid grid-cols-[minmax(0,1.4fr)_minmax(0,.9fr)]" aria-label="プレイヤーと現在の目標">
     <article className="home-status-panel min-w-0 rounded-2xl border border-white/10 bg-slate-900/80 shadow-xl shadow-slate-950/25">
       <div className="home-status-row">
@@ -154,6 +156,11 @@ const HomeOverview = ({ game, goal, onOpenQuest }) => (
       {!goal && <button type="button" onClick={onOpenQuest} className="mt-2 rounded-lg bg-amber-300 px-2 py-1.5 text-[10px] font-black text-slate-950">クエストへ</button>}
     </article>
   </section>
+  <section className="home-coin-balance" aria-label="所持コイン">
+    <span className="flex min-w-0 items-center gap-2 text-slate-200"><CircleDollarSign className="home-coin-icon shrink-0 text-amber-300" aria-hidden="true" /><span className="truncate font-bold">所持コイン</span></span>
+    <output className="home-coin-value">{Number(game.money ?? 0).toLocaleString()} <span className="home-coin-unit">C</span></output>
+  </section>
+  </>
 );
 
 const Home = ({
@@ -302,7 +309,7 @@ const Home = ({
             <section className="mt-5">
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-xs font-black tracking-[0.18em] text-amber-300">今日やること</p>
+                  {/* <p className="text-xs font-black tracking-[0.18em] text-amber-300">今日やること</p> */}
                   <h2 className="mt-1 text-xl font-black">今日やること</h2>
                 </div>
                 <span className={`rounded-full px-3 py-1.5 text-xs font-black ${isTodayComplete ? 'bg-emerald-400/15 text-emerald-300' : 'bg-amber-300/15 text-amber-200'}`}>
