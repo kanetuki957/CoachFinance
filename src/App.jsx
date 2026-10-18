@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import {
+  ArrowLeft,
   Check,
   BarChart3,
   CircleDollarSign,
@@ -19,7 +20,7 @@ import {
   VolumeX,
   X,
 } from 'lucide-react';
-import { FinanceProvider, getGoalTaskPlan, useFinance } from './context/FinanceContext';
+import { FinanceProvider, GOAL_CATEGORIES, getGoalTaskPlan, useFinance } from './context/FinanceContext';
 import { TransactionForm } from './components/TransactionForm';
 import { Onboarding } from './components/Onboarding';
 import { PlayerStatusPanel } from './components/home/PlayerStatusPanel';
@@ -451,6 +452,27 @@ function BottomNavigation({ active, onChange }) {
   </nav>;
 }
 
+function QuestScreen({ onClose }) {
+  const { selectGoal } = useFinance();
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const chooseGoal = (goal) => {
+    if (!selectedCategory) return;
+    selectGoal(selectedCategory, goal);
+    onClose();
+  };
+
+  if (selectedCategory) return <div className="quest-screen min-h-[100dvh] bg-[#10182b] text-slate-100"><main className="mx-auto w-full max-w-md px-5 pb-28 pt-5">
+    <header className="flex items-center gap-3"><button type="button" onClick={() => setSelectedCategory(null)} className="rounded-xl p-2 text-slate-300 transition hover:bg-white/10" aria-label="カテゴリー選択へ戻る"><ArrowLeft className="h-5 w-5" /></button><div className="min-w-0 flex-1"><p className="text-xs font-black tracking-[.18em] text-emerald-300">今回の目標</p><h1 className="mt-1 text-2xl font-black">{selectedCategory.name}</h1></div><button type="button" onClick={onClose} className="rounded-xl p-2 text-slate-300 transition hover:bg-white/10" aria-label="閉じる"><X className="h-6 w-6" /></button></header>
+    <section className="mt-6 space-y-2" aria-label={`${selectedCategory.name}の目標一覧`}>{selectedCategory.goals.map((goal) => <button key={goal.id} type="button" onClick={() => chooseGoal(goal)} className="w-full rounded-xl border border-slate-700 bg-slate-800/70 p-4 text-left text-sm font-bold leading-relaxed transition active:scale-[.98] hover:border-emerald-400 hover:bg-emerald-400/10">{goal.title}</button>)}</section>
+  </main></div>;
+
+  return <div className="quest-screen min-h-[100dvh] bg-[#10182b] text-slate-100"><main className="mx-auto w-full max-w-md px-5 pb-28 pt-5">
+    <header className="flex items-start gap-3"><div className="min-w-0 flex-1"><p className="text-xs font-black tracking-[.18em] text-emerald-300">今回の目標</p><h1 className="mt-1 text-3xl font-black tracking-tight">カテゴリーを選ぶ</h1></div><button type="button" onClick={onClose} className="rounded-xl p-2 text-slate-300 transition hover:bg-white/10" aria-label="閉じる"><X className="h-6 w-6" /></button></header>
+    <section className="mt-7 space-y-3" aria-label="目標カテゴリー">{GOAL_CATEGORIES.map((category) => <button key={category.id} type="button" onClick={() => setSelectedCategory(category)} className="quest-category-card group flex w-full items-center gap-4 rounded-2xl border border-slate-700 bg-slate-800/80 p-4 text-left transition active:scale-[.98] hover:border-emerald-400/60 hover:bg-slate-800"><span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-400/10 text-2xl">{category.icon}</span><span className="min-w-0 flex-1 text-base font-black text-slate-50">{category.name}</span><ChevronRight className="h-5 w-5 shrink-0 text-slate-400 transition group-hover:translate-x-1 group-hover:text-emerald-300" /></button>)}</section>
+  </main></div>;
+}
+
 function ChallengeHub({ onCreate, onRetry }) {
   return <div className="min-h-[100dvh] bg-[#10182b] text-slate-100"><main className="mx-auto w-full max-w-md px-5 pb-28 pt-5">
     <header><p className="text-xs font-black tracking-[.2em] text-amber-300">CHALLENGE</p><h1 className="mt-1 text-2xl font-black">チャレンジ</h1><p className="mt-3 text-sm font-bold leading-relaxed text-slate-400">進行中の挑戦を記録し、達成・中断・再挑戦をここで管理できます。</p></header>
@@ -469,6 +491,7 @@ function AppContent() {
   let page;
   if (screen === 'challenge-create') page = <ChallengeCreator onBack={() => setScreen('challenge')} />;
   else if (screen === 'challenge-retry' && retrySource) page = <ChallengeCreator retrySource={retrySource} onBack={() => setScreen('challenge')} />;
+  else if (screen === 'quest') page = <QuestScreen onClose={() => setScreen('home')} />;
   else if (screen === 'growth') page = <GrowthHistory onBack={() => setScreen('home')} />;
   else if (screen === 'shop') page = <Shop onBack={() => setScreen('home')} />;
   else if (screen === 'challenge') page = <ChallengeHub onCreate={() => setScreen('challenge-create')} onRetry={(challenge) => { setRetryChallengeId(challenge.id); setScreen('challenge-retry'); }} />;
