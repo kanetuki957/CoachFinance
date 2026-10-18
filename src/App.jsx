@@ -475,7 +475,7 @@ function QuestScreen({ onClose }) {
 
 function ChallengeHub({ onCreate, onRetry }) {
   return <div className="min-h-[100dvh] bg-[#10182b] text-slate-100"><main className="mx-auto w-full max-w-md px-5 pb-28 pt-5">
-    <header><p className="text-xs font-black tracking-[.2em] text-amber-300">CHALLENGE</p><h1 className="mt-1 text-2xl font-black">チャレンジ</h1><p className="mt-3 text-sm font-bold leading-relaxed text-slate-400">進行中の挑戦を記録し、達成・中断・再挑戦をここで管理できます。</p></header>
+    <header><h1 className="mt-1 text-2xl font-black">チャレンジ</h1><p className="mt-3 text-sm font-bold leading-relaxed text-slate-400">進行中の挑戦を記録し、達成・中断・再挑戦をここで管理できます。</p></header>
     <ActiveChallenges onCreate={onCreate} onRetry={onRetry} />
   </main></div>;
 }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, CircleDollarSign, ClipboardList, Flame, History, Target, Trophy } from 'lucide-react';
 import { useFinance } from '../../context/FinanceContext';
 import { findChallengeTemplate } from '../../domain/challenges/challengeCatalog';
@@ -58,11 +58,25 @@ export function GrowthHistory({ onBack }) {
   const { challenges, challengeCompletions, challengeRewardClaims } = useFinance();
   const [status, setStatus] = useState('all');
   const [selectedId, setSelectedId] = useState(null);
+  const [page, setPage] = useState(0);
+  const pagesRef = useRef(null);
   const summary = useMemo(() => getChallengeSummary(challenges, challengeCompletions, challengeRewardClaims), [challenges, challengeCompletions, challengeRewardClaims]);
   const categories = useMemo(() => getCategoryStatistics(challenges, challengeCompletions), [challenges, challengeCompletions]);
   const activity = useMemo(() => getDailyActivity(challenges, challengeCompletions), [challenges, challengeCompletions]);
   const history = useMemo(() => getChallengeHistory(challenges, challengeCompletions, challengeRewardClaims, { status, includeDebug: import.meta.env.DEV }), [challenges, challengeCompletions, challengeRewardClaims, status]);
   const detail = selectedId ? getChallengeHistoryDetail(selectedId, challenges, challengeCompletions, challengeRewardClaims) : null;
+  const tabs = ['これまでの成長', 'カテゴリー別の成長', '行動の積み重ね', 'これまでの挑戦'];
+  const goToPage = (index) => {
+    setPage(index);
+    const container = pagesRef.current;
+    if (container) container.scrollTo({ left: container.clientWidth * index, behavior: 'smooth' });
+  };
+  const syncPageFromScroll = (event) => {
+    const width = event.currentTarget.clientWidth;
+    if (!width) return;
+    const nextPage = Math.max(0, Math.min(tabs.length - 1, Math.round(event.currentTarget.scrollLeft / width)));
+    setPage((current) => current === nextPage ? current : nextPage);
+  };
   if (detail) return <Detail detail={detail} onBack={() => setSelectedId(null)} />;
-  return <div className="min-h-[100dvh] bg-[#10182b] text-slate-100"><main className="mx-auto w-full max-w-md px-5 pb-10 pt-5"><header className="flex items-center gap-3"><button type="button" onClick={onBack} className="rounded-xl p-2 hover:bg-white/10" aria-label="ホームへ戻る"><ArrowLeft className="h-5 w-5" /></button><div className="flex-1"><p className="text-xs font-black tracking-[.2em] text-amber-300">GROWTH HISTORY</p><h1 className="text-2xl font-black">成長の記録</h1></div><CalendarDays className="h-6 w-6 text-amber-300" /></header><p className="mt-4 text-sm font-bold leading-relaxed text-slate-400">挑戦と日々の行動を振り返り、積み重ねた努力を確かめましょう。</p><section className="mt-6"><p className="text-xs font-black uppercase tracking-[.18em] text-amber-300">Your summary</p><h2 className="mt-1 text-xl font-black">これまでの成長</h2><div className="mt-3"><Summary summary={summary} /></div></section><Categories statistics={categories} /><ActivityCalendar activity={activity} /><HistoryList history={history} status={status} onStatus={setStatus} onSelect={setSelectedId} /></main></div>;
+  return <div className="min-h-[100dvh] overflow-x-hidden bg-[#10182b] text-slate-100"><main className="mx-auto w-full max-w-md px-5 pb-28 pt-5"><div className="flex items-center gap-2"><button type="button" onClick={onBack} className="rounded-xl p-2 text-slate-300 hover:bg-white/10" aria-label="ホームへ戻る"><ArrowLeft className="h-5 w-5" /></button><p className="flex-1 text-xs font-black tracking-[.2em] text-amber-300">GROWTH HISTORY</p><CalendarDays className="h-5 w-5 text-amber-300" /></div><nav className="growth-page-tabs mt-4 grid grid-cols-4" aria-label="成長記録ページ">{tabs.map((label, index) => <button key={label} type="button" onClick={() => goToPage(index)} aria-current={page === index ? 'page' : undefined} className={`growth-page-tab ${page === index ? 'is-active' : ''}`}>{label}</button>)}</nav><div ref={pagesRef} onScroll={syncPageFromScroll} className="growth-pages mt-5 flex snap-x snap-mandatory overflow-x-auto" aria-label="成長記録のページ"><section className="w-full min-w-full shrink-0 snap-start"><p className="text-xs font-black uppercase tracking-[.18em] text-amber-300">YOUR SUMMARY</p><h1 className="mt-1 text-2xl font-black">これまでの成長</h1><div className="mt-4"><Summary summary={summary} /></div></section><section className="w-full min-w-full shrink-0 snap-start"><Categories statistics={categories} /></section><section className="w-full min-w-full shrink-0 snap-start"><ActivityCalendar activity={activity} /></section><section className="w-full min-w-full shrink-0 snap-start"><HistoryList history={history} status={status} onStatus={setStatus} onSelect={setSelectedId} /></section></div></main></div>;
 }
