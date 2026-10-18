@@ -30,6 +30,13 @@ body {
   --home-stat-label-size: 0.5rem;
   --home-stat-value-size: 0.75rem;
   --home-goal-padding: clamp(0.5rem, 2vw, 0.75rem);
+  --home-coin-height: clamp(2rem, 9vw, 2.375rem);
+  --home-coin-padding-x: clamp(0.625rem, 3vw, 0.75rem);
+  --home-coin-font-size: clamp(0.8rem, 3.5vw, 0.95rem);
+  --home-coin-icon-size: clamp(1rem, 4vw, 1.125rem);
+  --home-coin-radius: 0.5rem;
+  --home-coin-margin-top: 0.5rem;
+  --home-coin-margin-bottom: 0.5rem;
 }
 
 .home-screen-home .home-overview { gap: var(--home-overview-gap); }
@@ -66,6 +73,25 @@ body {
 .home-screen-home .home-stat-label { font-size: var(--home-stat-label-size); line-height: 1.1; }
 .home-screen-home .home-stat-value { margin-top: 0.125rem; font-size: var(--home-stat-value-size); line-height: 1.1; }
 .home-screen-home .home-goal-card { padding: var(--home-goal-padding); }
+.home-screen-home .home-coin-balance {
+  display: flex;
+  min-width: 0;
+  height: var(--home-coin-height);
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: var(--home-coin-margin-top);
+  margin-bottom: var(--home-coin-margin-bottom);
+  padding: 0 var(--home-coin-padding-x);
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, .28);
+  border-radius: var(--home-coin-radius);
+  background: #1b2639;
+  font-size: var(--home-coin-font-size);
+}
+.home-screen-home .home-coin-icon { width: var(--home-coin-icon-size); height: var(--home-coin-icon-size); }
+.home-screen-home .home-coin-value { flex: none; color: #ffd54d; font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.home-screen-home .home-coin-unit { font-size: .82em; }
 
 /* App-level navigation: one stable, safe-area-aware bar across every screen. */
 .app-bottom-nav {
