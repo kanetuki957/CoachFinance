@@ -107,7 +107,7 @@ export const PRODUCT_CATALOG = [
 
   // ここからソファの追加商品
   poco('poco_sofa_001', 'くもり空 ソファ', 'sofa', 850, '🛋️', 'どんな部屋にも馴染む、ゆったり2人掛けソファ。', ['popular'], {
-    size: 'L',
+    size: 'M',
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 4},    // 配置時に占めるグリッド数（横幅・奥行き）
@@ -419,7 +419,7 @@ export const PRODUCT_CATALOG = [
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
   poco('poco_TV_002', 'スマートテレビ４０型', 'tv', 1000, '📺', 'コンパクトで使いやすい、最新のスマートテレビ４０型。', ['recommended'], {
-    size: 'M',
+    size: 'L',
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
@@ -431,7 +431,7 @@ export const PRODUCT_CATALOG = [
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
   poco('poco_TV_003', 'スマートテレビ６０型', 'tv', 1500, '📺', '大画面で迫力のある、最新のスマートテレビ６０型。', ['new'], {
-    size: 'M',
+    size: 'L',
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 4 },    // 配置時に占めるグリッド数（横幅・奥行き）
