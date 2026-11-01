@@ -30,7 +30,7 @@ import { FurnitureInventory } from './components/room/FurnitureInventory';
 import { ChallengeCreator } from './components/challenges/ChallengeCreator';
 import { ActiveChallenges } from './components/challenges/ActiveChallenges';
 import { GrowthHistory } from './components/challenges/GrowthHistory';
-import { playCompletionSound } from './utils/playCompletionSound';
+import { playBGM, playSE, preloadAudio } from './audio/audioManager';
 import { createGoalBgm } from './utils/createGoalBgm';
 import { getCompletedTaskIds } from './domain/tasks/taskPlan';
 import { getProductById, isProductImagePath } from './domain/shop/productCatalog';
@@ -201,17 +201,18 @@ const Home = ({
   const totalProgress = allTasks.length ? Math.min(Math.round((completedCount / allTasks.length) * 100), 100) : 0;
   const isTodayComplete = tasks.length > 0 && remainingToday === 0;
 
-  const openMemo = (task) => {
-    playCompletionSound();
+  const openMemo = (task, event) => {
+    playSE('questComplete', event);
     setMemo('');
     setSelectedTask(task);
     setIsMemoOpen(true);
   };
 
-  const saveCompletion = () => {
+  const saveCompletion = (event) => {
     if (!selectedTask) return;
     const completion = completeTask(selectedTask.id, memo);
     if (completion?.reward) {
+      playSE('rewardEarned', event);
       setLastReward(completion.reward);
     }
     setIsMemoOpen(false);
@@ -238,10 +239,10 @@ const Home = ({
     return { ok: true };
   };
 
-  const confirmFurniturePlacement = () => {
+  const confirmFurniturePlacement = (event) => {
     if (!furniturePlacement) return;
     const result = furniturePlacement.instanceId ? saveFurniturePlacement(furniturePlacement.instanceId, furniturePlacement) : placeOwnedFurniture(furniturePlacement.product.id, furniturePlacement);
-    if (result.ok) setFurniturePlacement(null);
+    if (result.ok) { playSE('installation', event); setFurniturePlacement(null); }
   };
 
   return (
@@ -330,7 +331,7 @@ const Home = ({
                         </span>
                         <div className="min-w-0 flex-1"><p className={`text-[15px] font-bold leading-relaxed ${isDone ? 'text-emerald-100 line-through decoration-emerald-400/60' : 'text-slate-50'}`}>{task.title}</p>{task.description && <p className="mt-1 text-xs font-medium text-slate-400">{task.description}</p>}</div>
                         {isCurrent ? (
-                          <button onClick={() => openMemo(task)} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-300 text-slate-950 shadow-lg shadow-amber-400/15 transition hover:scale-105 hover:bg-amber-200" aria-label={`Complete ${task.title}`} title="Complete">
+                          <button onClick={(event) => openMemo(task, event)} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-300 text-slate-950 shadow-lg shadow-amber-400/15 transition hover:scale-105 hover:bg-amber-200" aria-label={`Complete ${task.title}`} title="Complete">
                             <Check className="h-6 w-6 stroke-[3]" />
                           </button>
                         ) : !isDone && <LockKeyhole className="h-4 w-4 shrink-0 text-slate-500" />}
@@ -432,7 +433,12 @@ const Home = ({
 };
 
 export default function App() {
-  return <FinanceProvider><AppContent /></FinanceProvider>;
+  const playButtonClick = (event) => {
+    if (event.nativeEvent.__idelisSoundHandled) return;
+    const button = event.target.closest?.('button:not(:disabled), [role="button"]');
+    if (button) playSE('click');
+  };
+  return <FinanceProvider><div onClick={playButtonClick}><AppContent /></div></FinanceProvider>;
 }
 
 const tabs = [
@@ -485,24 +491,31 @@ function AppContent() {
   const [completedNow, setCompletedNow] = useState(false);
   const [screen, setScreen] = useState('home');
   const [retryChallengeId, setRetryChallengeId] = useState(null);
+  useEffect(() => { preloadAudio(); }, []);
+  const navigate = (nextScreen) => {
+    // Start from the navigation gesture when possible; Shop also retries safely
+    // after mounting for browsers that defer audio permission.
+    if (nextScreen === 'shop') playBGM('pocoShopping');
+    setScreen(nextScreen);
+  };
   const retrySource = challenges.find((challenge) => challenge.id === retryChallengeId) ?? null;
   if (!profile && !completedNow) return <Onboarding onComplete={() => setCompletedNow(true)} />;
 
   let page;
   if (screen === 'challenge-create') page = <ChallengeCreator onBack={() => setScreen('challenge')} />;
   else if (screen === 'challenge-retry' && retrySource) page = <ChallengeCreator retrySource={retrySource} onBack={() => setScreen('challenge')} />;
-  else if (screen === 'quest') page = <QuestScreen onClose={() => setScreen('home')} />;
-  else if (screen === 'growth') page = <GrowthHistory onBack={() => setScreen('home')} />;
-  else if (screen === 'shop') page = <Shop onBack={() => setScreen('home')} />;
+  else if (screen === 'quest') page = <QuestScreen onClose={() => navigate('home')} />;
+  else if (screen === 'growth') page = <GrowthHistory onBack={() => navigate('home')} />;
+  else if (screen === 'shop') page = <Shop onBack={() => navigate('home')} />;
   else if (screen === 'challenge') page = <ChallengeHub onCreate={() => setScreen('challenge-create')} onRetry={(challenge) => { setRetryChallengeId(challenge.id); setScreen('challenge-retry'); }} />;
   else page = <Home
     section={screen}
     openGoalSelector={false}
-    onNavigate={setScreen}
-    onOpenShop={() => setScreen('shop')}
-    onOpenChallenges={() => setScreen('challenge-create')}
-    onOpenHistory={() => setScreen('growth')}
+    onNavigate={navigate}
+    onOpenShop={() => navigate('shop')}
+    onOpenChallenges={() => navigate('challenge-create')}
+    onOpenHistory={() => navigate('growth')}
   />;
 
-  return <div className="app-shell">{page}<BottomNavigation active={screen === 'challenge-create' || screen === 'challenge-retry' ? 'challenge' : screen} onChange={setScreen} /></div>;
+  return <div className="app-shell">{page}<BottomNavigation active={screen === 'challenge-create' || screen === 'challenge-retry' ? 'challenge' : screen} onChange={navigate} /></div>;
 }

@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ChevronRight, Heart, Home } from 'lucide-react';
 import { POCO_CATEGORIES, getProductsByBrand, isProductImagePath } from '../domain/shop/productCatalog';
 import { BRANDS, getBrandById } from '../domain/shop/brands';
 import { useFinance } from '../context/FinanceContext';
+import { playBGM, playSE, stopBGM } from '../audio/audioManager';
 
 const tagLabel = { new: 'NEW', popular: '人気', recommended: 'おすすめ' };
 const Coin = ({ value }) => <span className="inline-flex items-center gap-1 font-black text-[#d9762a]">● {value.toLocaleString()}</span>;
@@ -38,11 +39,12 @@ export const Shop = ({ onBack }) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [purchasedProduct, setPurchasedProduct] = useState(null);
   const favorites = game.favoriteProductIds ?? [];
+  useEffect(() => { playBGM('pocoShopping'); return stopBGM; }, []);
   // 商品カードから詳細画面へ進むために、選択中の商品を保持する。
   const openProduct = (product) => { setSelectedProduct(product); setView('detail'); };
   const favorite = (productId) => toggleFavoriteProduct(productId);
   // 実際の残高・在庫更新は Context 経由でドメイン層に任せ、成功したときだけ完了画面を表示する。
-  const purchase = () => { const result = buyProduct(selectedProduct.id); if (result.ok) { setPurchasedProduct(result.product); setView('complete'); } };
+  const purchase = (event) => { const result = buyProduct(selectedProduct.id); if (result.ok) { playSE('furniturePurchase', event); setPurchasedProduct(result.product); setView('complete'); } };
   const goHome = () => { setCategory(null); setSelectedProduct(null); setView('home'); };
   const renderCards = (items, className = 'flex gap-3 overflow-x-auto pb-2') => <div className={className}>{items.map((product) => <div key={product.id} className={className.includes('grid') ? '' : 'w-40 shrink-0'}><ProductCard product={product} favorite={favorites.includes(product.id)} onFavorite={favorite} onOpen={openProduct} /></div>)}</div>;
 

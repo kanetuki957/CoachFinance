@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { POCO_CATEGORIES, getProductById, isProductImagePath } from '../../domain/shop/productCatalog';
+import { playSE } from '../../audio/audioManager';
 
 const CATEGORY_IDS = ['sofa', 'table-chair', 'storage', 'bed', 'lighting', 'decor', 'rug'];
 const categories = [{ id: 'all', name: 'すべて' }, ...CATEGORY_IDS.map((id) => ({ id, name: id === 'decor' ? '植物・雑貨' : POCO_CATEGORIES.find((category) => category.id === id)?.name ?? id }))];
@@ -44,7 +45,7 @@ export const FurnitureInventory = ({ open, onClose, ownedFurniture, placedFurnit
       <div className="mt-2 max-h-[40dvh] overflow-y-auto pr-1">{visible.length ? <div className="grid grid-cols-3 gap-3 pb-2">{visible.map(({ product, totalOwned }) => {
         const available = Math.max(0, totalOwned - placedCount(product.id));
         const selectedCard = selectedId === product.id;
-        return <button key={product.id} type="button" disabled={available === 0} onClick={() => setSelectedId(product.id)} aria-label={`${product.name}、使用可能数 ${available}`} className={`relative aspect-square overflow-hidden rounded-2xl border p-2 text-left transition disabled:cursor-not-allowed ${selectedCard ? 'border-amber-300 bg-amber-300/15 ring-2 ring-amber-300/40' : 'border-white/10 bg-white/10'} ${available === 0 ? 'opacity-45' : 'hover:bg-white/15'}`}>
+        return <button key={product.id} type="button" disabled={available === 0} onClick={(event) => { playSE('choice', event); setSelectedId(product.id); }} aria-label={`${product.name}、使用可能数 ${available}`} className={`relative aspect-square overflow-hidden rounded-2xl border p-2 text-left transition disabled:cursor-not-allowed ${selectedCard ? 'border-amber-300 bg-amber-300/15 ring-2 ring-amber-300/40' : 'border-white/10 bg-white/10'} ${available === 0 ? 'opacity-45' : 'hover:bg-white/15'}`}>
           {isProductImagePath(product.image) ? <img src={product.image} alt={product.name} className="h-full w-full object-contain drop-shadow-lg" /> : <span className="flex h-full w-full items-center justify-center text-4xl">{product.image}</span>}
           <span className="absolute bottom-1.5 right-1.5 rounded-full bg-slate-950/80 px-2 py-0.5 text-xs font-black text-white">×{available}</span>
           {selectedCard && <span className="absolute left-1.5 top-1.5 rounded-full bg-amber-300 p-1 text-slate-950"><Check className="h-3.5 w-3.5 stroke-[3]" /></span>}
