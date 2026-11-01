@@ -69,13 +69,13 @@ export const PRODUCT_CATALOG = [
 
   // ここから収納の追加商品
   poco('poco_storage_001', 'リネン ボックスラック', 'storage', 350, '🗄️', '布の風合いがやさしい、見せても隠しても使える収納ラック。', ['new'], {
-    size: 'S',
+    size: 'L',
     scale: 1,
     aspectRatio: 125 / 72,
     footprint: { width: 2, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
     footprintOffset: {
-      x: -2, // 左へ
-      y: -1,  // 上下
+      x: 7, // 左へ
+      y: 7,  // 上下
     },
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
@@ -208,6 +208,30 @@ export const PRODUCT_CATALOG = [
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
    poco('poco_table_003', 'ナチュラル ダイニングテーブル', 'table-chair', 780, '🪵', '食事も作業も心地よく。明るい木目のコンパクトテーブル。', ['popular'], {
+    size: 'M',
+    scale: 1,
+    aspectRatio: 125 / 72,
+   footprint: { width: 2, depth: 3 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 8, // 左右
+      y: -1,  // 上下
+    },
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+ poco('poco_table_004', 'ナチュラル ダイニングテーブル', 'table-chair', 780, '🪵', '食事も作業も心地よく。明るい木目のコンパクトテーブル。', ['popular'], {
+    size: 'M',
+    scale: 1,
+    aspectRatio: 125 / 72,
+   footprint: { width: 2, depth: 3 },    // 配置時に占めるグリッド数（横幅・奥行き）
+    footprintOffset: {
+      x: 8, // 左右
+      y: -1,  // 上下
+    },
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+   poco('poco_table_005', 'ナチュラル ダイニングテーブル', 'table-chair', 780, '🪵', '食事も作業も心地よく。明るい木目のコンパクトテーブル。', ['popular'], {
     size: 'M',
     scale: 1,
     aspectRatio: 125 / 72,
@@ -520,6 +544,59 @@ export const PRODUCT_CATALOG = [
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),
+
+  poco('poco_openrack_004', 'オープンラック', 'openrack', 600, '🗄️', '見せる収納にぴったりな、シンプルなオープンラック。', ['recommended'], {
+   size: 'M',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 3, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: -1, // 左右
+      y: 1,  // 上下
+    },
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+
+  poco('poco_openrack_005', 'オープンラック', 'openrack', 600, '🗄️', '見せる収納にぴったりな、シンプルなオープンラック。', ['recommended'], {
+   size: 'M',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 3, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: -1, // 左右
+      y: 1,  // 上下
+    },
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+
+  poco('poco_openrack_006', 'オープンラック', 'openrack', 600, '🗄️', '見せる収納にぴったりな、シンプルなオープンラック。', ['recommended'], {
+   size: 'M',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 3, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: -1, // 左右
+      y: 1,  // 上下
+    },
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+
+  poco('poco_openrack_007', 'オープンラック', 'openrack', 600, '🗄️', '見せる収納にぴったりな、シンプルなオープンラック。', ['recommended'], {
+   size: 'M',
+    scale: 1,
+    aspectRatio: 125 / 72,
+    footprint: { width: 3, depth: 1 },    // 配置時に占めるグリッド数（横幅・奥行き）
+     footprintOffset: {
+      x: -1, // 左右
+      y: 1,  // 上下
+    },
+    placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
+    placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
+  }),
+
 
   //ベッド追加
   poco('poco_bed_001', 'シングルベッド', 'bed', 1000, '🛏️', '快適な眠りをサポートする、シンプルなシングルベッド。', ['popular'], 
