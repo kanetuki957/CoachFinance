@@ -6,7 +6,7 @@ import { getFurnitureScreenAnchor } from './roomGrid';
 // from the rendered image box.
 export const getFurnitureFloorContact = ({ product, gridX, gridY, gridWidth, gridHeight }) => {
   const anchor = getPlacementAnchor(product);
-  return getFurnitureScreenAnchor({ product, gridX, gridY, gridWidth, gridHeight, placementAnchor: anchor, footprintOffset: product?.footprintOffset });
+  return getFurnitureScreenAnchor({ product, gridX, gridY, gridWidth, gridHeight, placementAnchor: anchor });
 };
 
 // Larger screen-space floor Y values are nearer to the viewer in this room's

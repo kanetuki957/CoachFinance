@@ -11,8 +11,14 @@ export const DEFAULT_FURNITURE_SETTINGS = {
   size: 'M',                          // 基本サイズ（XS / S / M / L / XL / XXL）
   scale: 1,                           // 基本サイズに対する拡大・縮小率
   footprint: { width: 1, depth: 1 },  // 配置時に占めるグリッド数（横幅・奥行き）
-  // Visual-only adjustment for the footprint marker in screen percentage units.
+  // Legacy visual adjustment. Kept for catalogue compatibility only.
   footprintOffset: { x: 0, y: 0 },
+  // Image-only adjustment in room-screen percentage units. It never changes
+  // the footprint marker, drag coordinates, or collision cells.
+  imageOffset: { x: 0, y: 0 },
+  // Normalized coordinate inside the rendered image. { .5, 1 } means the
+  // image's horizontal center at its bottom edge is attached to the floor.
+  imageAnchor: { x: 0.5, y: 1 },
   placementType: 'floor',             // 配置場所の種類（floor: 床、wall: 壁）
   placementAnchor: { x: 0.5, y: 1 },  // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
 };
@@ -33,6 +39,8 @@ export const normalizeFurnitureSettings = (settings, legacyWidth, legacyHeight) 
       ...settings,
       footprint: { ...DEFAULT_FURNITURE_SETTINGS.footprint, ...settings.footprint },
       footprintOffset: { ...DEFAULT_FURNITURE_SETTINGS.footprintOffset, ...settings.footprintOffset },
+      imageOffset: { ...DEFAULT_FURNITURE_SETTINGS.imageOffset, ...(settings.imageOffset ?? settings.footprintOffset) },
+      imageAnchor: { ...DEFAULT_FURNITURE_SETTINGS.imageAnchor, ...settings.imageAnchor },
       placementAnchor: { ...DEFAULT_FURNITURE_SETTINGS.placementAnchor, ...settings.placementAnchor },
     };
   }

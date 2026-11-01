@@ -292,6 +292,7 @@ export const PRODUCT_CATALOG = [
       x: 5, // 左右
       y: 5,  // 上下
     },
+    imageOffset: { x: 0, y: 0 }, // 台座は画像下端にあるため補正不要
     placementType: 'floor',               // 配置場所の種類（floor: 床、wall: 壁）
     placementAnchor: { x: 0.5, y: 0.95 }, // 配置判定に使う基準点（幅・奥行きに対する割合。0.5, 1 は中央下端）
   }),

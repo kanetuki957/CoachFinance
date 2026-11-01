@@ -51,17 +51,15 @@ export const getFootprintScreenPolygon = ({ gridX, gridY, gridWidth = 1, gridHei
   gridToScreen(gridX, gridY + gridHeight, columns, rows),
 ];
 
-export const getFurnitureScreenAnchor = ({ gridX, gridY, gridWidth, gridHeight, placementAnchor = { x: 0.5, y: 1 }, footprintOffset }) => {
+export const getFurnitureScreenAnchor = ({ gridX, gridY, gridWidth, gridHeight, placementAnchor = { x: 0.5, y: 1 }, imageOffset }) => {
   const point = gridToScreen(gridX + gridWidth * placementAnchor.x, gridY + gridHeight * placementAnchor.y);
-  return { x: point.x + (Number(footprintOffset?.x) || 0), y: point.y + (Number(footprintOffset?.y) || 0) };
+  return { x: point.x + (Number(imageOffset?.x) || 0), y: point.y + (Number(imageOffset?.y) || 0) };
 };
 
 // Each occupied cell uses the same projection as its furniture and drag target.
-export const getFootprintMarkerPolygons = ({ gridX, gridY, gridWidth, gridHeight, columns, rows, footprintOffset }) =>
+export const getFootprintMarkerPolygons = ({ gridX, gridY, gridWidth, gridHeight, columns, rows }) =>
   Array.from({ length: gridWidth * gridHeight }, (_, index) => {
     const cellX = gridX + index % gridWidth;
     const cellY = gridY + Math.floor(index / gridWidth);
-    const offsetX = Number(footprintOffset?.x) || 0;
-    const offsetY = Number(footprintOffset?.y) || 0;
-    return toPointString(getFootprintScreenPolygon({ gridX: cellX, gridY: cellY, gridWidth: 1, gridHeight: 1, columns, rows }).map((point) => ({ x: point.x + offsetX, y: point.y + offsetY })));
+    return toPointString(getFootprintScreenPolygon({ gridX: cellX, gridY: cellY, gridWidth: 1, gridHeight: 1, columns, rows }));
   });

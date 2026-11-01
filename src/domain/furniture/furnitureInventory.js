@@ -44,6 +44,30 @@ export const normalizeFurnitureState = (game) => {
 
 export const getOwnedFurnitureQuantity = (items, id) => items.find((item) => item.furnitureId === id)?.quantity ?? 0;
 const overlaps = (a, b) => a.gridX < b.gridX + b.gridWidth && a.gridX + a.gridWidth > b.gridX && a.gridY < b.gridY + b.gridHeight && a.gridY + a.gridHeight > b.gridY;
+const getOccupiedCells = ({ gridX, gridY, gridWidth, gridHeight }) => Array.from({ length: gridWidth * gridHeight }, (_, index) => ({ x: gridX + index % gridWidth, y: gridY + Math.floor(index / gridWidth) }));
+
+export const getFurniturePlacementDiagnostics = (items, furnitureId, gridX, gridY, orientation, ignoredInstanceId) => {
+  const product = getFurnitureById(furnitureId);
+  if (!product) return { furnitureId, available: false, reason: 'INVALID_PRODUCT', occupiedCells: [], collisionCells: [], collisionFurnitureIds: [] };
+  const footprint = getGridFootprint(product, orientation);
+  const candidate = { gridX, gridY, ...footprint };
+  const hasValidPosition = Number.isInteger(gridX) && Number.isInteger(gridY);
+  const hasValidFootprint = Number.isInteger(footprint.gridWidth) && footprint.gridWidth > 0 && Number.isInteger(footprint.gridHeight) && footprint.gridHeight > 0;
+  const isWithinBounds = hasValidPosition && hasValidFootprint && gridX >= 0 && gridY >= 0 && gridX + footprint.gridWidth <= ROOM_GRID.columns && gridY + footprint.gridHeight <= ROOM_GRID.rows;
+  const occupiedCells = hasValidFootprint ? getOccupiedCells(candidate) : [];
+  const collisions = isWithinBounds ? items.flatMap((item) => {
+    if (item.instanceId === ignoredInstanceId) return [];
+    const placed = getFurnitureById(item.furnitureId);
+    if (!placed) return [];
+    const placedFootprint = { gridX: item.gridX, gridY: item.gridY, ...getGridFootprint(placed, item.orientation) };
+    if (!overlaps(candidate, placedFootprint)) return [];
+    const placedCells = getOccupiedCells(placedFootprint);
+    return [{ furnitureId: item.furnitureId, cells: occupiedCells.filter((cell) => placedCells.some((placedCell) => placedCell.x === cell.x && placedCell.y === cell.y)) }];
+  }) : [];
+  const inAllowedZone = isWithinBounds && isPlacementFootprintAllowed({ product, gridX, gridY, ...footprint, columns: ROOM_GRID.columns, rows: ROOM_GRID.rows });
+  const reason = !hasValidPosition ? 'INVALID_POSITION' : !hasValidFootprint ? 'INVALID_FOOTPRINT' : !isWithinBounds ? 'OUT_OF_BOUNDS' : collisions.length ? 'OCCUPIED' : !inAllowedZone ? 'OUTSIDE_ALLOWED_ZONE' : 'AVAILABLE';
+  return { furnitureId, gridX, gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, occupiedCells, collisionCells: collisions.flatMap((collision) => collision.cells), collisionFurnitureIds: collisions.map((collision) => collision.furnitureId), isWithinBounds, inAllowedZone, available: reason === 'AVAILABLE', reason };
+};
 
 export const isFurniturePlacementAvailable = (items, furnitureId, gridX, gridY, orientation, ignoredInstanceId) => {
   const product = getFurnitureById(furnitureId);

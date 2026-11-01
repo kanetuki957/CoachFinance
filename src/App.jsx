@@ -33,9 +33,9 @@ import { GrowthHistory } from './components/challenges/GrowthHistory';
 import { playBGM, playSE, preloadAudio, retryBGM, stopBGM } from './audio/audioManager';
 import { getCompletedTaskIds } from './domain/tasks/taskPlan';
 import { getProductById, isProductImagePath } from './domain/shop/productCatalog';
-import { getFurnitureOrientations, getGridFootprint, isFurniturePlacementAvailable, isFurniturePlacementInAllowedZone, ROOM_GRID } from './domain/furniture/furnitureInventory';
+import { getFurnitureOrientations, getFurniturePlacementDiagnostics, getGridFootprint, isFurniturePlacementAvailable, isFurniturePlacementInAllowedZone, ROOM_GRID } from './domain/furniture/furnitureInventory';
 import { getPlacementAnchor, getPlacementType } from './domain/room/placementZones';
-import { getFootprintMarkerPolygons, getFurnitureScreenAnchor, screenToGrid } from './domain/room/roomGrid';
+import { getFootprintMarkerPolygons, getFurnitureScreenAnchor, gridToScreen, screenToGrid } from './domain/room/roomGrid';
 import { getDepthOrder } from './domain/room/depthOrder';
 import { resolveFurnitureSize } from './domain/room/furnitureSizing';
 import companionRoom from './assets/rooms/companion-room.png';
@@ -62,6 +62,35 @@ const COMPANION_POSITION = { left: 47, bottom: 19, width: 10 };
 const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPlacementMove, onEditFurniture }) => {
   const roomRef = useRef(null);
   const drag = useRef(null);
+  const [imageOffsetOverride, setImageOffsetOverride] = useState(null);
+  const [imageSettingsCopyStatus, setImageSettingsCopyStatus] = useState('');
+  const previewImageOffset = placement && imageOffsetOverride?.productId === placement.product.id
+    ? imageOffsetOverride
+    : placement?.product.imageOffset;
+  const updatePreviewImageOffset = (axis, value) => {
+    if (!placement) return;
+    const currentOffset = previewImageOffset ?? { x: 0, y: 0 };
+    setImageOffsetOverride({
+      productId: placement.product.id,
+      x: axis === 'x' ? value : currentOffset.x,
+      y: axis === 'y' ? value : currentOffset.y,
+    });
+    setImageSettingsCopyStatus('');
+  };
+  const copyPreviewImageSettings = async () => {
+    if (!placement || !navigator.clipboard?.writeText) {
+      setImageSettingsCopyStatus('コピーできません');
+      return;
+    }
+    const imageAnchor = placement.product.imageAnchor ?? { x: 0.5, y: 1 };
+    const offset = previewImageOffset ?? { x: 0, y: 0 };
+    try {
+      await navigator.clipboard.writeText(`imageAnchor: { x: ${imageAnchor.x}, y: ${imageAnchor.y} },\nimageOffset: { x: ${offset.x}, y: ${offset.y} },`);
+      setImageSettingsCopyStatus('コピー済み');
+    } catch {
+      setImageSettingsCopyStatus('コピーできません');
+    }
+  };
   const pointInRoom = (event) => {
     const rect = roomRef.current.getBoundingClientRect();
     return { x: (event.clientX - rect.left) * (100 / rect.width), y: (event.clientY - rect.top) * (100 / rect.height) };
@@ -80,13 +109,24 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
     event.currentTarget.setPointerCapture?.(event.pointerId);
     const point = pointInRoom(event);
     const footprint = getGridFootprint(placement.product, placement.orientation);
-    const screenAnchor = getFurnitureScreenAnchor({ product: placement.product, gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, placementAnchor: getPlacementAnchor(placement.product), footprintOffset: placement.product.footprintOffset });
+    const screenAnchor = getFurnitureScreenAnchor({ product: placement.product, gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, placementAnchor: getPlacementAnchor(placement.product) });
     drag.current = { offsetX: point.x - screenAnchor.x, offsetY: point.y - screenAnchor.y };
   };
   const endPreviewDrag = (event) => {
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     drag.current = null;
   };
+  useEffect(() => {
+    if (!import.meta.env.DEV || !placement) return;
+    const footprint = getGridFootprint(placement.product, placement.orientation);
+    console.debug('Furniture placement diagnostics', {
+      ...getFurniturePlacementDiagnostics(placedFurniture, placement.product.id, placement.gridX, placement.gridY, placement.orientation, placement.instanceId),
+      placementAnchor: getPlacementAnchor(placement.product),
+      imageOffset: previewImageOffset,
+      imageAnchor: placement.product.imageAnchor,
+      markerFootprint: { gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight },
+    });
+  }, [placedFurniture, placement, previewImageOffset]);
   const companionDepth = getDepthOrder({ floorContact: { x: COMPANION_POSITION.left, y: 100 - COMPANION_POSITION.bottom } });
   return (
   <div
@@ -99,21 +139,43 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
     {placement && (() => {
       const footprint = getGridFootprint(placement.product, placement.orientation);
       const displaySize = resolveFurnitureSize(placement.product);
-      const screenAnchor = getFurnitureScreenAnchor({ product: placement.product, gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, placementAnchor: getPlacementAnchor(placement.product), footprintOffset: placement.product.footprintOffset });
+      const placementAnchor = getPlacementAnchor(placement.product);
+      const logicalAnchor = getFurnitureScreenAnchor({ product: placement.product, gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, placementAnchor });
+      const screenAnchor = getFurnitureScreenAnchor({ product: placement.product, gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, placementAnchor, imageOffset: previewImageOffset });
+      const imageAnchor = placement.product.imageAnchor ?? { x: 0.5, y: 1 };
       const available = isFurniturePlacementAvailable(placedFurniture, placement.product.id, placement.gridX, placement.gridY, placement.orientation, placement.instanceId) && isFurniturePlacementInAllowedZone(placement.product.id, placement.gridX, placement.gridY, placement.orientation);
       const footprintMarkers = getPlacementType(placement.product) === 'floor'
-        ? getFootprintMarkerPolygons({ gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, columns: ROOM_GRID.columns, rows: ROOM_GRID.rows, footprintOffset: placement.product.footprintOffset })
+        ? getFootprintMarkerPolygons({ gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, columns: ROOM_GRID.columns, rows: ROOM_GRID.rows })
         : [];
+      const footprintCenters = Array.from({ length: footprint.gridWidth * footprint.gridHeight }, (_, index) => gridToScreen(
+        placement.gridX + (index % footprint.gridWidth) + 0.5,
+        placement.gridY + Math.floor(index / footprint.gridWidth) + 0.5,
+        ROOM_GRID.columns,
+        ROOM_GRID.rows,
+      ));
         const shouldFloat = getPlacementType(placement.product) === 'floor';
       return <>
         <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 2500 }}>
           {footprintMarkers.map((points, index) => <polygon key={index} points={points} fill={available ? 'rgba(125,211,252,.32)' : 'rgba(251,113,133,.40)'} stroke={available ? 'rgba(186,230,253,.60)' : 'rgba(251,113,133,.85)'} strokeWidth="0.35" />)}
+          {import.meta.env.DEV && <>
+            {footprintCenters.map((center, index) => <circle key={`cell-center-${index}`} cx={center.x} cy={center.y} r="0.55" fill="#f8fafc" stroke="#0f172a" strokeWidth="0.18" />)}
+            <circle cx={logicalAnchor.x} cy={logicalAnchor.y} r="1.05" fill="#22d3ee" stroke="#0f172a" strokeWidth="0.25" />
+            <circle cx={screenAnchor.x} cy={screenAnchor.y} r="0.75" fill="#fbbf24" stroke="#0f172a" strokeWidth="0.2" />
+          </>}
         </svg>
-        <div onPointerDown={startPreviewDrag} onPointerMove={movePreview} onPointerUp={endPreviewDrag} onPointerCancel={endPreviewDrag} className="absolute touch-none" style={{ left: `${screenAnchor.x}%`, top: `${screenAnchor.y}%`, width: `${(displaySize.width / 320) * 100}%`, height: `${(displaySize.height / 320) * 100}%`, transform: 'translate(-50%, -100%)', zIndex: 3000 }}>
+        <div onPointerDown={startPreviewDrag} onPointerMove={movePreview} onPointerUp={endPreviewDrag} onPointerCancel={endPreviewDrag} className="absolute touch-none" style={{ left: `${screenAnchor.x}%`, top: `${screenAnchor.y}%`, width: `${(displaySize.width / 320) * 100}%`, height: `${(displaySize.height / 320) * 100}%`, transform: `translate(-${imageAnchor.x * 100}%, -${imageAnchor.y * 100}%)`, zIndex: 3000 }}>
         <div className="h-full w-full transition-transform duration-150 ease-out" style={{ transform: shouldFloat ? `translateY(-${FURNITURE_FLOAT_OFFSET}px)` : undefined }}>
           {isProductImagePath(footprint.image) && <img src={footprint.image} alt="" className="h-full w-full object-contain opacity-80" />}
         </div>
-    </div></>}
+    </div>
+        {import.meta.env.DEV && <div className="absolute right-2 top-2 z-[3500] w-36 rounded border border-cyan-200/40 bg-slate-950/85 p-2 text-[9px] text-slate-100 shadow-lg backdrop-blur">
+          <p className="mb-1 font-bold tracking-wide text-cyan-200">IMAGE ALIGN</p>
+          <p className="mb-1 text-[8px] text-slate-300">白: セル中心 / 水色: 論理アンカー / 黄: 画像接地点</p>
+          {['x', 'y'].map((axis) => <label key={axis} className="mb-1 flex items-center gap-1">offset {axis.toUpperCase()}<input type="number" step="0.1" value={previewImageOffset?.[axis] ?? 0} onChange={(event) => updatePreviewImageOffset(axis, Number(event.target.value) || 0)} className="min-w-0 flex-1 rounded border border-slate-500 bg-slate-900 px-1 py-0.5 text-right text-slate-100" /></label>)}
+          <button type="button" onClick={copyPreviewImageSettings} className="mt-1 w-full rounded bg-cyan-300 px-1 py-1 text-[9px] font-bold text-slate-950">設定をコピー</button>
+          {imageSettingsCopyStatus && <p className="mt-1 text-center text-[8px] text-cyan-100">{imageSettingsCopyStatus}</p>}
+        </div>}
+      </>}
     )()}
     <img
       src={companionCharacter}
