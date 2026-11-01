@@ -222,6 +222,98 @@ const SNS_FREE_1_HOUR_PLAN = createPlan([
   ['1時間SNSを見ない', '1週間のSNS利用を振り返る', '1時間のSNSオフ達成！'],
 ]);
 
+// 自己成長・メンタル////////////////////////////////////////////////////////////////////////////////
+const SELF_GROWTH_STRENGTHS_PLAN = createPlan([
+  ['過去に頑張った経験を1つ思い出す', 'その経験で発揮した長所を1つ書く'],
+  ['人から褒められたことを思い出す', '長所を1つ追加する'],
+  ['自分が得意なことを1つ考える', 'そこから長所を1つ見つける'],
+  ['過去に困難を乗り越えた経験を振り返る', 'その経験から長所を1つ見つける'],
+  ['普段自然にできていることを考える', '長所を1つ追加して合計5つにする'],
+  ['見つけた5つの長所を読み返す', 'それぞれに具体的な経験を1つ結びつける'],
+  ['5つの長所を整理する', '今後活かしたい長所を1つ選ぶ'],
+]);
+const SELF_GROWTH_DAILY_ACHIEVEMENTS_PLAN = createPlan([
+  ['今日できたことを1つ書く', '小さな行動でも達成として認める'],
+  ['今日できたことを1つ書く', '昨日の記録を読み返す'],
+  ['今日できたことを1つ書く', 'その行動を起こせた理由を考える'],
+  ['今日できたことを1つ書く', '普段当たり前にしている行動にも目を向ける'],
+  ['今日できたことを1つ書く', 'できたときの気持ちを一言添える'],
+  ['今日できたことを1つ書く', '過去5日間の記録を振り返る'],
+  ['今日できたことを1つ書く', '7日間の記録を読み返す', '続けたい行動を1つ選ぶ'],
+]);
+const SELF_GROWTH_VALUES_PLAN = createPlan([
+  ['最近うれしかった出来事を3つ書く', 'なぜうれしかったのか考える'],
+  ['嫌だと感じた出来事を1つ振り返る', 'そのとき大切にしたかったことを書く'],
+  ['尊敬する人物を1人選ぶ', '尊敬する理由を3つ書く'],
+  ['自分が大切にしたいことを5つ書き出す', '特に重要なものを3つ選ぶ'],
+  ['選んだ3つの価値観について理由を書く', '日常での具体例を1つずつ考える'],
+  ['3つの価値観をもとに小さな行動を1つ決める', 'その行動を実践する'],
+  ['3つの価値観を自分の言葉で整理する', '今後大切にしたい行動を1つ決める'],
+]);
+const SELF_GROWTH_INTERESTS_PLAN = createPlan([
+  ['最近楽しかったことを思い出す', '好きなことを2つ書く'],
+  ['子どもの頃に夢中になったことを考える', '好きなことを2つ追加する'],
+  ['休日にやりたいことを考える', '好きなことを2つ追加する'],
+  ['好きな場所・食べ物・体験を考える', '好きなことを2つ追加する'],
+  ['興味はあるけれど試していないことを考える', '好きなことを2つ追加して合計10個にする'],
+  ['10個の好きなことを読み返す', '共通する特徴を1つ探す'],
+  ['特に好きなことを3つ選ぶ', 'そのうち1つを今後楽しむ方法を決める'],
+]);
+const SELF_GROWTH_EMOTIONS_PLAN = createPlan([
+  ['今の気持ちを一言で書く', 'その気持ちになった出来事を1つ書く'],
+  ['今日感じた気持ちを1つ書く', '気持ちの強さを1〜5で表す'],
+  ['今日の気持ちを1つ書く', 'その気持ちのきっかけを考える'],
+  ['今日の気持ちを1つ書く', '気持ちが変化した場面を振り返る'],
+  ['今日の気持ちを1つ書く', 'その気持ちに対して自分が取った行動を記録する'],
+  ['今日の気持ちを1つ書く', '過去5日間の感情記録を読み返す'],
+  ['今日の気持ちを1つ書く', '7日間で気づいた感情の傾向を1つ整理する', '自分をいたわる方法を1つ考える'],
+]);
+const SELF_GROWTH_SMALL_CHALLENGES_PLAN = createPlan([
+  ['今までやってみたかったことを3つ書く', '無理なくできる挑戦を3つ選ぶ'],
+  ['1つ目の挑戦をする時間を決める', '必要な準備をする'],
+  ['1つ目の挑戦を実行する', '挑戦した感想を一言書く'],
+  ['2つ目の挑戦を実行する', '挑戦して気づいたことを1つ書く'],
+  ['3つ目の挑戦を実行する', '挑戦した感想を一言書く'],
+  ['3つの挑戦を振り返る', '一番印象に残った挑戦を選ぶ'],
+  ['3つの挑戦を記録として整理する', '次に挑戦したいことを1つ決める'],
+]);
+const SELF_GROWTH_COPING_PLAN = createPlan([
+  ['苦手だと感じることを3つ書く', '取り組みたいものを1つ選ぶ'],
+  ['その苦手なことが起きる場面を考える', '困っている理由を1つ書く'],
+  ['これまで試した対処法を振り返る', 'うまくいったことを1つ探す'],
+  ['無理なく試せる対処法を3つ考える', '試す方法を1つ選ぶ'],
+  ['選んだ対処法を小さく試す', '試した結果を記録する'],
+  ['試した対処法を振り返る', '必要なら方法を1つ調整する'],
+  ['自分に合いそうな対処法を1つまとめる', '次に困ったときの行動を決める'],
+]);
+const SELF_GROWTH_SELF_PRAISE_PLAN = createPlan([
+  ['今日取り組んだことを1つ書く', 'その行動を認める言葉を1つ書く'],
+  ['今日頑張ったことを1つ書く', '自分にねぎらいの言葉をかける'],
+  ['今日工夫したことを1つ見つける', 'その工夫を肯定する言葉を書く'],
+  ['今日できた小さなことを1つ書く', '結果だけでなく過程にも目を向ける'],
+  ['今日挑戦したことを1つ振り返る', '結果にかかわらず行動したことを認める'],
+  ['今日の自分にかけたい言葉を1つ書く', '過去5日間の記録を読み返す'],
+  ['今日の自分を認める言葉を1つ書く', '7日間の記録を振り返る', '今後も使いたい言葉を1つ選ぶ'],
+]);
+const SELF_GROWTH_SUCCESSES_PLAN = createPlan([
+  ['これまで達成したことを1つ思い出す', '成功した理由を一言書く'],
+  ['学生時代や仕事でできたことを思い出す', '成功体験を1つ追加する'],
+  ['小さな成功体験を1つ思い出す', 'そのときの行動を記録する'],
+  ['努力してできるようになったことを1つ書く', 'どんな工夫をしたか振り返る'],
+  ['誰かの役に立てた経験を1つ書く', '成功体験を合計5つにする'],
+  ['5つの成功体験を読み返す', '共通する自分の行動を探す'],
+  ['5つの成功体験を整理する', 'これから活かしたい経験を1つ選ぶ'],
+]);
+const SELF_GROWTH_IDEAL_SELF_PLAN = createPlan([
+  ['1年後にどんな自分でいたいか考える', '理想の姿を3つ書く'],
+  ['理想の生活を具体的に想像する', '大切にしたい習慣を2つ書く'],
+  ['理想の自分が持っている強みを考える', '身につけたい強みを2つ書く'],
+  ['理想と現在の自分を比較する', '最初に変えたいことを1つ選ぶ'],
+  ['理想に近づくための小さな行動を3つ考える', '今すぐできる行動を1つ選ぶ'],
+  ['選んだ小さな行動を実践する', '実践した感想を一言書く'],
+  ['理想の自分を100文字程度でまとめる', '今後7日間で取り組む行動を1つ決める'],
+]);
+
 // ここで目標のタイトル名を変えれる
 export const GOAL_CATEGORIES = [
   {
@@ -272,6 +364,38 @@ export const GOAL_CATEGORIES = [
       { id: 'life-sns', title: 'SNSを見ない時間を1時間つくる', taskPlan: SNS_FREE_1_HOUR_PLAN },
     ],
   },
+  {
+    id: 'self-growth',
+    statusType: 'knowledge',
+    statusReward: 5,
+    moneyReward: 100,
+    icon: '🌟',
+    name: '自己成長',
+    color: 'violet',
+    goals: [
+      { id: 'self-growth-strengths', title: '自分の長所を5つ見つける', taskPlan: SELF_GROWTH_STRENGTHS_PLAN },
+      { id: 'self-growth-values', title: '自分の大切な価値観を3つ見つける', taskPlan: SELF_GROWTH_VALUES_PLAN },
+      { id: 'self-growth-interests', title: '1週間で自分の好きなことを10個見つける', taskPlan: SELF_GROWTH_INTERESTS_PLAN },
+      { id: 'self-growth-small-challenges', title: '1週間で小さな挑戦を3つする', taskPlan: SELF_GROWTH_SMALL_CHALLENGES_PLAN },
+      { id: 'self-growth-successes', title: '過去の成功体験を5つ振り返る', taskPlan: SELF_GROWTH_SUCCESSES_PLAN },
+      { id: 'self-growth-ideal-self', title: '自分の理想の姿を言葉にする', taskPlan: SELF_GROWTH_IDEAL_SELF_PLAN },
+    ],
+  },
+  {
+    id: 'mental',
+    statusType: 'knowledge',
+    statusReward: 5,
+    moneyReward: 100,
+    icon: '💗',
+    name: 'メンタル',
+    color: 'rose',
+    goals: [
+      { id: 'self-growth-daily-achievements', title: '7日間、今日できたことを記録する', taskPlan: SELF_GROWTH_DAILY_ACHIEVEMENTS_PLAN },
+      { id: 'self-growth-emotions', title: '7日間、自分の感情を振り返る', taskPlan: SELF_GROWTH_EMOTIONS_PLAN },
+      { id: 'self-growth-coping', title: '自分の苦手なことへの対処法を考える', taskPlan: SELF_GROWTH_COPING_PLAN },
+      { id: 'self-growth-self-praise', title: '1週間で自分を褒める習慣をつくる', taskPlan: SELF_GROWTH_SELF_PRAISE_PLAN },
+    ],
+  },
 ];
 
 // Keep challenge templates aligned with the existing goal catalogue without
@@ -282,6 +406,28 @@ assertValidChallengeTemplates(CHALLENGE_TEMPLATES, GOAL_CATEGORIES);
 const LEGACY_TASK_PLANS = {
   exercise: EXERCISE_DEFAULT_PLAN,
   life: WAKE_UP_FIXED_TIME_PLAN,
+};
+
+const MENTAL_GOAL_IDS = new Set([
+  'self-growth-daily-achievements',
+  'self-growth-emotions',
+  'self-growth-coping',
+  'self-growth-self-praise',
+]);
+
+const migrateLegacySelfGrowthGoal = (goal) => {
+  if (!goal || goal.categoryId !== 'self-growth' || goal.categoryName !== '自己成長・メンタル') return goal;
+  const category = GOAL_CATEGORIES.find((item) => item.id === (MENTAL_GOAL_IDS.has(goal.goalId) ? 'mental' : 'self-growth'));
+  return {
+    ...goal,
+    categoryId: category.id,
+    categoryName: category.name,
+    icon: category.icon,
+    color: category.color,
+    statusType: goal.statusType ?? category.statusType,
+    statusReward: goal.statusReward ?? category.statusReward,
+    moneyReward: goal.moneyReward ?? category.moneyReward,
+  };
 };
 
 export const getGoalTaskPlan = (goal) => {
@@ -299,7 +445,7 @@ export const FinanceProvider = ({ children }) => {
   });
   const [activeGoal, setActiveGoal] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY))?.activeGoal ?? null;
+      return migrateLegacySelfGrowthGoal(JSON.parse(localStorage.getItem(STORAGE_KEY))?.activeGoal ?? null);
     } catch {
       return null;
     }
