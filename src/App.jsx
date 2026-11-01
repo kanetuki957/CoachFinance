@@ -64,6 +64,7 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
   const drag = useRef(null);
   const [imageOffsetOverride, setImageOffsetOverride] = useState(null);
   const [imageSettingsCopyStatus, setImageSettingsCopyStatus] = useState('');
+  const [showLogicalAnchor, setShowLogicalAnchor] = useState(false);
   const previewImageOffset = placement && imageOffsetOverride?.productId === placement.product.id
     ? imageOffsetOverride
     : placement?.product.imageOffset;
@@ -147,19 +148,24 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
       const footprintMarkers = getPlacementType(placement.product) === 'floor'
         ? getFootprintMarkerPolygons({ gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, columns: ROOM_GRID.columns, rows: ROOM_GRID.rows })
         : [];
-      const footprintCenters = Array.from({ length: footprint.gridWidth * footprint.gridHeight }, (_, index) => gridToScreen(
-        placement.gridX + (index % footprint.gridWidth) + 0.5,
-        placement.gridY + Math.floor(index / footprint.gridWidth) + 0.5,
+      const footprintCenter = gridToScreen(
+        placement.gridX + footprint.gridWidth / 2,
+        placement.gridY + footprint.gridHeight / 2,
         ROOM_GRID.columns,
         ROOM_GRID.rows,
-      ));
+      );
+      const imageAlignmentDelta = {
+        x: screenAnchor.x - footprintCenter.x,
+        y: screenAnchor.y - footprintCenter.y,
+      };
         const shouldFloat = getPlacementType(placement.product) === 'floor';
       return <>
         <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 2500 }}>
           {footprintMarkers.map((points, index) => <polygon key={index} points={points} fill={available ? 'rgba(125,211,252,.32)' : 'rgba(251,113,133,.40)'} stroke={available ? 'rgba(186,230,253,.60)' : 'rgba(251,113,133,.85)'} strokeWidth="0.35" />)}
           {import.meta.env.DEV && <>
-            {footprintCenters.map((center, index) => <circle key={`cell-center-${index}`} cx={center.x} cy={center.y} r="0.55" fill="#f8fafc" stroke="#0f172a" strokeWidth="0.18" />)}
-            <circle cx={logicalAnchor.x} cy={logicalAnchor.y} r="1.05" fill="#22d3ee" stroke="#0f172a" strokeWidth="0.25" />
+            <line x1={footprintCenter.x} y1={footprintCenter.y} x2={screenAnchor.x} y2={screenAnchor.y} stroke="#facc15" strokeWidth="0.35" strokeDasharray="0.8 0.6" />
+            <circle cx={footprintCenter.x} cy={footprintCenter.y} r="1.05" fill="#f8fafc" stroke="#0f172a" strokeWidth="0.25" />
+            {showLogicalAnchor && <circle cx={logicalAnchor.x} cy={logicalAnchor.y} r="0.8" fill="#22d3ee" stroke="#0f172a" strokeWidth="0.2" />}
             <circle cx={screenAnchor.x} cy={screenAnchor.y} r="0.75" fill="#fbbf24" stroke="#0f172a" strokeWidth="0.2" />
           </>}
         </svg>
@@ -170,8 +176,10 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
     </div>
         {import.meta.env.DEV && <div className="absolute right-2 top-2 z-[3500] w-36 rounded border border-cyan-200/40 bg-slate-950/85 p-2 text-[9px] text-slate-100 shadow-lg backdrop-blur">
           <p className="mb-1 font-bold tracking-wide text-cyan-200">IMAGE ALIGN</p>
-          <p className="mb-1 text-[8px] text-slate-300">白: セル中心 / 水色: 論理アンカー / 黄: 画像接地点</p>
+          <p className="mb-1 text-[8px] text-slate-300">白: フットプリント中心 / 黄: 画像接地点</p>
+          <p className="mb-1 font-mono text-[8px] text-amber-200">Δ X {imageAlignmentDelta.x.toFixed(1)} / Y {imageAlignmentDelta.y.toFixed(1)}</p>
           {['x', 'y'].map((axis) => <label key={axis} className="mb-1 flex items-center gap-1">offset {axis.toUpperCase()}<input type="number" step="0.1" value={previewImageOffset?.[axis] ?? 0} onChange={(event) => updatePreviewImageOffset(axis, Number(event.target.value) || 0)} className="min-w-0 flex-1 rounded border border-slate-500 bg-slate-900 px-1 py-0.5 text-right text-slate-100" /></label>)}
+          <label className="mt-1 flex items-center gap-1 text-[8px] text-cyan-100"><input type="checkbox" checked={showLogicalAnchor} onChange={(event) => setShowLogicalAnchor(event.target.checked)} />論理アンカーを表示</label>
           <button type="button" onClick={copyPreviewImageSettings} className="mt-1 w-full rounded bg-cyan-300 px-1 py-1 text-[9px] font-bold text-slate-950">設定をコピー</button>
           {imageSettingsCopyStatus && <p className="mt-1 text-center text-[8px] text-cyan-100">{imageSettingsCopyStatus}</p>}
         </div>}
