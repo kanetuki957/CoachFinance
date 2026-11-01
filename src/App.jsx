@@ -33,9 +33,9 @@ import { GrowthHistory } from './components/challenges/GrowthHistory';
 import { playBGM, playSE, preloadAudio, retryBGM, stopBGM } from './audio/audioManager';
 import { getCompletedTaskIds } from './domain/tasks/taskPlan';
 import { getProductById, isProductImagePath } from './domain/shop/productCatalog';
-import { getFurnitureOrientations, getGridFootprint, GRID_CELL_SIZE, isFurniturePlacementAvailable, isFurniturePlacementInAllowedZone, ROOM_GRID } from './domain/furniture/furnitureInventory';
-import { getPlacementType } from './domain/room/placementZones';
-import { getFootprintMarkerPolygons } from './domain/room/roomGrid';
+import { getFurnitureOrientations, getGridFootprint, isFurniturePlacementAvailable, isFurniturePlacementInAllowedZone, ROOM_GRID } from './domain/furniture/furnitureInventory';
+import { getPlacementAnchor, getPlacementType } from './domain/room/placementZones';
+import { getFootprintMarkerPolygons, getFurnitureScreenAnchor, screenToGrid } from './domain/room/roomGrid';
 import { getDepthOrder } from './domain/room/depthOrder';
 import { resolveFurnitureSize } from './domain/room/furnitureSizing';
 import companionRoom from './assets/rooms/companion-room.png';
@@ -64,20 +64,24 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
   const drag = useRef(null);
   const pointInRoom = (event) => {
     const rect = roomRef.current.getBoundingClientRect();
-    return { x: (event.clientX - rect.left) * (320 / rect.width), y: (event.clientY - rect.top) * (320 / rect.height) };
+    return { x: (event.clientX - rect.left) * (100 / rect.width), y: (event.clientY - rect.top) * (100 / rect.height) };
   };
   const movePreview = (event) => {
     if (!drag.current || !placement) return;
     const point = pointInRoom(event);
     const footprint = getGridFootprint(placement.product, placement.orientation);
-    onPlacementMove({ gridX: Math.min(Math.max(Math.round((point.x - drag.current.offsetX) / GRID_CELL_SIZE), 0), ROOM_GRID.columns - footprint.gridWidth), gridY: Math.min(Math.max(Math.round((point.y - drag.current.offsetY) / GRID_CELL_SIZE), 0), ROOM_GRID.rows - footprint.gridHeight) });
+    const anchor = getPlacementAnchor(placement.product);
+    const gridPoint = screenToGrid(point.x - drag.current.offsetX, point.y - drag.current.offsetY, ROOM_GRID.columns, ROOM_GRID.rows);
+    onPlacementMove({ gridX: Math.min(Math.max(Math.round(gridPoint.gridX - footprint.gridWidth * anchor.x), 0), ROOM_GRID.columns - footprint.gridWidth), gridY: Math.min(Math.max(Math.round(gridPoint.gridY - footprint.gridHeight * anchor.y), 0), ROOM_GRID.rows - footprint.gridHeight) });
   };
   const startPreviewDrag = (event) => {
     if (!placement) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
     const point = pointInRoom(event);
-    drag.current = { offsetX: point.x - placement.gridX * GRID_CELL_SIZE, offsetY: point.y - placement.gridY * GRID_CELL_SIZE };
+    const footprint = getGridFootprint(placement.product, placement.orientation);
+    const screenAnchor = getFurnitureScreenAnchor({ product: placement.product, gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, placementAnchor: getPlacementAnchor(placement.product), footprintOffset: placement.product.footprintOffset });
+    drag.current = { offsetX: point.x - screenAnchor.x, offsetY: point.y - screenAnchor.y };
   };
   const endPreviewDrag = (event) => {
     event.currentTarget.releasePointerCapture?.(event.pointerId);
@@ -95,6 +99,7 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
     {placement && (() => {
       const footprint = getGridFootprint(placement.product, placement.orientation);
       const displaySize = resolveFurnitureSize(placement.product);
+      const screenAnchor = getFurnitureScreenAnchor({ product: placement.product, gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, placementAnchor: getPlacementAnchor(placement.product), footprintOffset: placement.product.footprintOffset });
       const available = isFurniturePlacementAvailable(placedFurniture, placement.product.id, placement.gridX, placement.gridY, placement.orientation, placement.instanceId) && isFurniturePlacementInAllowedZone(placement.product.id, placement.gridX, placement.gridY, placement.orientation);
       const footprintMarkers = getPlacementType(placement.product) === 'floor'
         ? getFootprintMarkerPolygons({ gridX: placement.gridX, gridY: placement.gridY, gridWidth: footprint.gridWidth, gridHeight: footprint.gridHeight, columns: ROOM_GRID.columns, rows: ROOM_GRID.rows, footprintOffset: placement.product.footprintOffset })
@@ -104,7 +109,7 @@ const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPl
         <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 2500 }}>
           {footprintMarkers.map((points, index) => <polygon key={index} points={points} fill={available ? 'rgba(125,211,252,.32)' : 'rgba(251,113,133,.40)'} stroke={available ? 'rgba(186,230,253,.60)' : 'rgba(251,113,133,.85)'} strokeWidth="0.35" />)}
         </svg>
-        <div onPointerDown={startPreviewDrag} onPointerMove={movePreview} onPointerUp={endPreviewDrag} onPointerCancel={endPreviewDrag} className="absolute touch-none" style={{ left: `${(placement.gridX / ROOM_GRID.columns) * 100}%`, top: `${(placement.gridY / ROOM_GRID.rows) * 100}%`, width: `${(displaySize.width / 320) * 100}%`, height: `${(displaySize.height / 320) * 100}%`, zIndex: 3000 }}>
+        <div onPointerDown={startPreviewDrag} onPointerMove={movePreview} onPointerUp={endPreviewDrag} onPointerCancel={endPreviewDrag} className="absolute touch-none" style={{ left: `${screenAnchor.x}%`, top: `${screenAnchor.y}%`, width: `${(displaySize.width / 320) * 100}%`, height: `${(displaySize.height / 320) * 100}%`, transform: 'translate(-50%, -100%)', zIndex: 3000 }}>
         <div className="h-full w-full transition-transform duration-150 ease-out" style={{ transform: shouldFloat ? `translateY(-${FURNITURE_FLOAT_OFFSET}px)` : undefined }}>
           {isProductImagePath(footprint.image) && <img src={footprint.image} alt="" className="h-full w-full object-contain opacity-80" />}
         </div>

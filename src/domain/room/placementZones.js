@@ -1,10 +1,9 @@
+import { gridToScreen, ROOM_FLOOR_CORNERS } from './roomGrid.js';
+
 // All points use the room's normalized 0–1 coordinate space, so they scale with the room image.
 export const ROOM_PLACEMENT_ZONES = {
   floor: [
-    { x: 0.50, y: 0.27 },//奥
-    { x: 1.0, y: 0.62 },//右 y数字を上げれば下に行く
-    { x: 0.50, y: 0.95},//手前
-    { x: 0.008, y: 0.59 },//左 x数字を下げれば下に行く y数字を上げれば下に行く
+    ...Object.values(ROOM_FLOOR_CORNERS).map(({ x, y }) => ({ x: x / 100, y: y / 100 })),
   ],
   wallLeft: [
     { x: 0.14, y: 0.18 },// 左壁の左上
@@ -40,7 +39,8 @@ export const getPlacementZonePolygons = (product) => getPlacementType(product) =
 
 export const isPlacementAnchorAllowed = ({ product, gridX, gridY, gridWidth, gridHeight, columns, rows }) => {
   const anchor = getPlacementAnchor(product);
-  const point = { x: (gridX + gridWidth * anchor.x) / columns, y: (gridY + gridHeight * anchor.y) / rows };
+  const screenPoint = gridToScreen(gridX + gridWidth * anchor.x, gridY + gridHeight * anchor.y, columns, rows);
+  const point = { x: screenPoint.x / 100, y: screenPoint.y / 100 };
   return getPlacementZonePolygons(product).some((polygon) => isPointInPolygon(point, polygon));
 };
 
@@ -52,12 +52,10 @@ export const isPlacementFootprintAllowed = ({ product, gridX, gridY, gridWidth, 
     return isPlacementAnchorAllowed({ product, gridX, gridY, gridWidth, gridHeight, columns, rows });
   }
 
-  return Array.from({ length: gridWidth * gridHeight }, (_, index) => {
-    const offsetX = index % gridWidth;
-    const offsetY = Math.floor(index / gridWidth);
-    return isPointInPolygon({
-      x: (gridX + offsetX + 0.5) / columns,
-      y: (gridY + offsetY + 1) / rows,
-    }, ROOM_PLACEMENT_ZONES.floor);
-  }).every(Boolean);
+  // The whole 10×10 logical grid is projected onto the visible floor. Bounds
+  // are therefore the source of truth; checking Cartesian cells against the
+  // diamond again incorrectly rejects valid front and corner cells.
+  return Number.isFinite(gridX) && Number.isFinite(gridY)
+    && gridX >= 0 && gridY >= 0
+    && gridX + gridWidth <= columns && gridY + gridHeight <= rows;
 };
