@@ -30,8 +30,7 @@ import { FurnitureInventory } from './components/room/FurnitureInventory';
 import { ChallengeCreator } from './components/challenges/ChallengeCreator';
 import { ActiveChallenges } from './components/challenges/ActiveChallenges';
 import { GrowthHistory } from './components/challenges/GrowthHistory';
-import { playBGM, playSE, preloadAudio } from './audio/audioManager';
-import { createGoalBgm } from './utils/createGoalBgm';
+import { playBGM, playSE, preloadAudio, retryBGM, stopBGM } from './audio/audioManager';
 import { getCompletedTaskIds } from './domain/tasks/taskPlan';
 import { getProductById, isProductImagePath } from './domain/shop/productCatalog';
 import { getFurnitureOrientations, getGridFootprint, GRID_CELL_SIZE, isFurniturePlacementAvailable, isFurniturePlacementInAllowedZone, ROOM_GRID } from './domain/furniture/furnitureInventory';
@@ -183,10 +182,7 @@ const Home = ({
   const [isBgmPlaying, setIsBgmPlaying] = useState(false);
   const [isFurnitureInventoryOpen, setIsFurnitureInventoryOpen] = useState(false);
   const [furniturePlacement, setFurniturePlacement] = useState(null);
-  const bgmPlayer = useRef(null);
   const isQuest = section === 'quest';
-
-  useEffect(() => () => bgmPlayer.current?.dispose(), []);
 
   const dayNumber = activeGoal ? getDayNumber(activeGoal.startedOn) : 1;
   const plan = activeGoal ? getGoalTaskPlan(activeGoal) ?? [] : [];
@@ -219,15 +215,14 @@ const Home = ({
     setSelectedTask(null);
   };
 
-  const toggleBgm = async () => {
+  const toggleBgm = async (event) => {
+    if (event?.nativeEvent) event.nativeEvent.__idelisBgmHandled = true;
     if (isBgmPlaying) {
-      bgmPlayer.current?.stop();
+      stopBGM();
       setIsBgmPlaying(false);
       return;
     }
-
-    bgmPlayer.current ??= createGoalBgm();
-    const didStart = await bgmPlayer.current.start();
+    const didStart = await playBGM('home');
     setIsBgmPlaying(didStart);
   };
 
@@ -437,6 +432,7 @@ export default function App() {
     if (event.nativeEvent.__idelisSoundHandled) return;
     const button = event.target.closest?.('button:not(:disabled), [role="button"]');
     if (button) playSE('click');
+    if (!event.nativeEvent.__idelisBgmHandled) void retryBGM();
   };
   return <FinanceProvider><div onClick={playButtonClick}><AppContent /></div></FinanceProvider>;
 }
@@ -492,10 +488,10 @@ function AppContent() {
   const [screen, setScreen] = useState('home');
   const [retryChallengeId, setRetryChallengeId] = useState(null);
   useEffect(() => { preloadAudio(); }, []);
+  useEffect(() => {
+    if (screen !== 'shop') void playBGM('home');
+  }, [screen]);
   const navigate = (nextScreen) => {
-    // Start from the navigation gesture when possible; Shop also retries safely
-    // after mounting for browsers that defer audio permission.
-    if (nextScreen === 'shop') playBGM('pocoShopping');
     setScreen(nextScreen);
   };
   const retrySource = challenges.find((challenge) => challenge.id === retryChallengeId) ?? null;

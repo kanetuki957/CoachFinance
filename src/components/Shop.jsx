@@ -3,7 +3,7 @@ import { ArrowLeft, ChevronRight, Heart, Home } from 'lucide-react';
 import { POCO_CATEGORIES, getProductsByBrand, isProductImagePath } from '../domain/shop/productCatalog';
 import { BRANDS, getBrandById } from '../domain/shop/brands';
 import { useFinance } from '../context/FinanceContext';
-import { playBGM, playSE, stopBGM } from '../audio/audioManager';
+import { playBGM, playSE } from '../audio/audioManager';
 
 const tagLabel = { new: 'NEW', popular: '人気', recommended: 'おすすめ' };
 const Coin = ({ value }) => <span className="inline-flex items-center gap-1 font-black text-[#d9762a]">● {value.toLocaleString()}</span>;
@@ -39,13 +39,20 @@ export const Shop = ({ onBack }) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [purchasedProduct, setPurchasedProduct] = useState(null);
   const favorites = game.favoriteProductIds ?? [];
-  useEffect(() => { playBGM('pocoShopping'); return stopBGM; }, []);
+  // The brand picker remains part of the normal app. POCO's dedicated BGM
+  // begins only after the POCO EC catalog has been entered.
+  useEffect(() => { void playBGM(view === 'brands' ? 'home' : 'pocoHome'); }, [view]);
   // 商品カードから詳細画面へ進むために、選択中の商品を保持する。
   const openProduct = (product) => { setSelectedProduct(product); setView('detail'); };
   const favorite = (productId) => toggleFavoriteProduct(productId);
   // 実際の残高・在庫更新は Context 経由でドメイン層に任せ、成功したときだけ完了画面を表示する。
   const purchase = (event) => { const result = buyProduct(selectedProduct.id); if (result.ok) { playSE('furniturePurchase', event); setPurchasedProduct(result.product); setView('complete'); } };
-  const goHome = () => { setCategory(null); setSelectedProduct(null); setView('home'); };
+  const goHome = () => {
+    // Invoked from the POCO brand card, so this also has a user gesture for
+    // browsers that require one before allowing music playback.
+    void playBGM('pocoHome');
+    setCategory(null); setSelectedProduct(null); setView('home');
+  };
   const renderCards = (items, className = 'flex gap-3 overflow-x-auto pb-2') => <div className={className}>{items.map((product) => <div key={product.id} className={className.includes('grid') ? '' : 'w-40 shrink-0'}><ProductCard product={product} favorite={favorites.includes(product.id)} onFavorite={favorite} onOpen={openProduct} /></div>)}</div>;
 
   if (view === 'brands') return <div className="min-h-[100dvh] bg-[#f8f5ee] text-[#292b28]"><main className="mx-auto w-full max-w-md px-4 pb-10 pt-5 sm:px-5"><header className="flex items-center gap-3"><BackButton onClick={onBack} label="ホームに戻る" /><div className="flex-1"><p className="text-[10px] font-black tracking-[.2em] text-[#738476]">IN-GAME SHOP</p><h1 className="text-2xl font-black">ブランドを選ぶ</h1></div><div className="rounded-xl bg-[#315d52] px-3 py-2 text-right text-white"><span className="block text-[10px] font-bold text-white/70">所持コイン</span><span className="text-sm font-black">● {game.money.toLocaleString()}</span></div></header><p className="mt-7 text-sm font-bold leading-relaxed text-[#64665f]">お気に入りのブランドから、暮らしを彩るアイテムを探そう。</p><section className="mt-5 space-y-5" aria-label="ブランド一覧">{BRANDS.map((brand) => <BrandCard key={brand.id} brand={brand} onSelect={goHome} />)}</section></main></div>;
