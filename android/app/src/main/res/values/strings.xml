@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">イデリス</string>
+    <string name="title_activity_main">イデリス</string>
+    <string name="package_name">com.idelis.app</string>
+    <string name="custom_url_scheme">com.idelis.app</string>
+</resources>
