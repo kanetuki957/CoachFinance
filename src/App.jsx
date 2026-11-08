@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { Analytics } from '@vercel/analytics/react';
 import {
   ArrowLeft,
@@ -58,6 +59,8 @@ const FURNITURE_FLOAT_OFFSET = 45;  //家具画像の浮く高さ調整
 // These percentage values preserve the existing character position and make
 // its floor contact available to the shared depth-order calculation.
 const COMPANION_POSITION = { left: 47, bottom: 19, width: 10 };
+const PRIVACY_POLICY_URL = 'https://coach-finance-sooty.vercel.app/privacy-policy.html';
+const shouldLoadWebAnalytics = !Capacitor.isNativePlatform();
 
 const Companion = ({ isComplete, progress, placedFurniture = [], placement, onPlacementMove, onEditFurniture }) => {
   const roomRef = useRef(null);
@@ -449,6 +452,15 @@ const Home = ({
       </main>
 
       {import.meta.env.DEV && <button type="button" onClick={() => addDebugMoney(1000)} className="fixed right-4 top-4 z-40 rounded-lg border border-fuchsia-300/50 bg-fuchsia-500/20 px-3 py-2 text-xs font-black text-fuchsia-100 backdrop-blur" aria-label="デバッグ用に1000コインを追加">DEBUG +1,000</button>}
+      {!isQuest && <footer className="px-5 pb-28 text-center text-xs font-semibold text-slate-400">
+        <a
+          href={PRIVACY_POLICY_URL}
+          className="inline-block rounded-lg px-3 py-2 text-slate-300 underline decoration-slate-500 underline-offset-4 transition hover:text-white focus:outline-none focus:ring-2 focus:ring-amber-300"
+        >
+          プライバシーポリシー
+        </a>
+      </footer>}
+
       <FurnitureInventory
         open={isFurnitureInventoryOpen}
         onClose={() => setIsFurnitureInventoryOpen(false)}
@@ -497,7 +509,7 @@ const Home = ({
           </div>
         </div>
       </nav>}
-      <Analytics />
+      {shouldLoadWebAnalytics && <Analytics />}
     </div>
   );
 };
